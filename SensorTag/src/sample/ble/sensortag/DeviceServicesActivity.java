@@ -38,9 +38,6 @@ import android.widget.TextView;
 import java.util.List;
 
 import sample.ble.sensortag.adapters.TiServicesAdapter;
-import sample.ble.sensortag.demo.DemoAccelerometerSensorActivity;
-import sample.ble.sensortag.demo.DemoGyroscopeSensorActivity;
-import sample.ble.sensortag.demo.DemoSensorActivity;
 import sample.ble.sensortag.sensor.TiAccelerometerSensor;
 import sample.ble.sensortag.sensor.TiGyroscopeSensor;
 import sample.ble.sensortag.sensor.TiSensor;
@@ -151,26 +148,6 @@ public class DeviceServicesActivity extends Activity {
             };
 
     private final TiServicesAdapter.OnServiceItemClickListener demoClickListener = new TiServicesAdapter.OnServiceItemClickListener() {
-        @Override
-        public void onDemoClick(BluetoothGattService service) {
-            final TiSensor<?> sensor = TiSensors.getSensor(service.getUuid().toString());
-            if (sensor == null)
-                return;
-
-            final Class<? extends DemoSensorActivity> demoClass;
-            if (sensor instanceof TiAccelerometerSensor)
-                demoClass = DemoAccelerometerSensorActivity.class;
-            else if (sensor instanceof TiGyroscopeSensor)
-                demoClass = DemoGyroscopeSensorActivity.class;
-            else
-                return;
-
-            final Intent demoIntent = new Intent();
-            demoIntent.setClass(DeviceServicesActivity.this, demoClass);
-            demoIntent.putExtra(DemoSensorActivity.EXTRAS_DEVICE_ADDRESS, deviceAddress);
-            demoIntent.putExtra(DemoSensorActivity.EXTRAS_SENSOR_UUID, service.getUuid().toString());
-            startActivity(demoIntent);
-        }
 
         @Override
         public void onServiceEnabled(BluetoothGattService service, boolean enabled) {
