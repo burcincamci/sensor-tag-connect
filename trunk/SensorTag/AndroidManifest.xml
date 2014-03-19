@@ -25,8 +25,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".DeviceServicesActivity"/>
-        <activity android:name=".demo.DemoAccelerometerSensorActivity"/>
-        <activity android:name=".demo.DemoGyroscopeSensorActivity"/>
         <service android:name=".BleService" android:enabled="true"/>
     </application>
 

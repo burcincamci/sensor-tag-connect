@@ -14,7 +14,7 @@
      limitations under the License.
 -->
 <resources>
-    <string name="app_name">Copy BLE SensorTag</string>
+    <string name="app_name">SensorLog</string>
     <string name="ble_not_supported">BLE is not supported</string>
     <string name="label_data">Data:</string>
     <string name="label_device_address">Device address:</string>
@@ -25,11 +25,6 @@
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
-
-    <string name="action_demo">Demo</string>
-
-    <string name="title_demo_accelerometer">Accelerometer Demo</string>
-    <string name="title_demo_gyroscope">Gyroscope Demo</string>
 
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>
