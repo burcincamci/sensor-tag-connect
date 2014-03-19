@@ -13,7 +13,6 @@ import sample.ble.sensortag.BluetoothGattExecutor;
  * Created by steven on 9/3/13.
  */
 public abstract class TiSensor<T> {
-    private final static String TAG = TiSensor.class.getSimpleName();
 
     private static String CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 
