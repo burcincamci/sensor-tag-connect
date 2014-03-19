@@ -38,8 +38,6 @@ import android.widget.TextView;
 import java.util.List;
 
 import sample.ble.sensortag.adapters.TiServicesAdapter;
-import sample.ble.sensortag.sensor.TiAccelerometerSensor;
-import sample.ble.sensortag.sensor.TiGyroscopeSensor;
 import sample.ble.sensortag.sensor.TiSensor;
 import sample.ble.sensortag.sensor.TiSensors;
 
