@@ -294,7 +294,7 @@ public class DeviceServicesActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void createLog() {
+    public void createLog() {
     	Intent intent = new Intent(this, CreateLogActivity.class);
         startActivity(intent);		
 	}

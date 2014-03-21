@@ -34,9 +34,15 @@
         </activity>
         <activity android:name="sample.ble.sensortag.DeviceServicesActivity" />
         <activity android:name="sample.ble.sensortag.CreateLogActivity" />
+
         <service
             android:name="sample.ble.sensortag.BleService"
             android:enabled="true" />
+
+        <activity
+            android:name="sample.ble.sensortag.LogWriting"
+            android:label="@string/title_activity_log_writing" >
+        </activity>
     </application>
 
 </manifest>
