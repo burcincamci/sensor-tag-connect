@@ -12,7 +12,7 @@
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
-     limitations under the License.
+     limitations under the License.
 -->
 <resources>
 
@@ -28,10 +28,31 @@
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
     <string name="title_create_log">Create a New Log</string>
+    <string name="title_write_log">Writing Log</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
     <string name="unknown_device">Unknown device</string>
     <string name="unknown_characteristic">Unknown characteristic</string>
     <string name="unknown_service">Unknown service</string>
+    <string name="who">Who are you?</string>
+    <string name="where">Where is SensorTag?</string>
+    <string name="what">What are you doing?</string>
+    <string name="start_button">Start</string>
+    <string name="stop_button">Stop</string>
+
+    <string-array name="where_array">
+        <item>Head</item>
+        <item>Belt</item>
+        <item>Socks</item>
+    </string-array>
+    <string-array name="what_array">
+        <item>walking</item>
+        <item>downstairs</item>
+        <item>upstairs</item>
+        <item>uphill</item>
+        <item>downhill</item>
+        <item>standing</item>
+        <item>running</item>
+    </string-array>
 
     <!-- Menu items -->
     <string name="menu_connect">Connect</string>
@@ -39,6 +60,6 @@
     <string name="menu_log">Create new log</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
-    <string name="hello_world">Hello world!</string>
+    <string name="title_activity_log_writing">LogWriting</string>
 
 </resources>
