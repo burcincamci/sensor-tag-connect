@@ -236,6 +236,7 @@ public class DeviceServicesActivity extends Activity {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
         }
+        	menu.findItem(R.id.menu_log).setVisible(true);
         return true;
     }
 
@@ -248,6 +249,9 @@ public class DeviceServicesActivity extends Activity {
             case R.id.menu_disconnect:
                 bleService.disconnect();
                 return true;
+            case R.id.menu_log:
+            	createLog();
+            	return true;
             case android.R.id.home:
                 onBackPressed();
                 return true;
@@ -255,7 +259,12 @@ public class DeviceServicesActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateConnectionState(final int resourceId) {
+    private void createLog() {
+    	Intent intent = new Intent(this, CreateLogActivity.class);
+        startActivity(intent);		
+	}
+
+	private void updateConnectionState(final int resourceId) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
