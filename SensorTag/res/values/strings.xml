@@ -22,6 +22,7 @@
     <string name="label_device_address">Device address:</string>
     <string name="label_state">State:</string>
     <string name="label_services">Services</string>
+    <string name="label_gps">GPS</string>
     <string name="no_data">No data</string>
     <string name="connected">Connected</string>
     <string name="disconnected">Disconnected</string>

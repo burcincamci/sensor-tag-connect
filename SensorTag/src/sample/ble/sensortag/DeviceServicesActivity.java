@@ -25,12 +25,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
@@ -55,6 +57,7 @@ public class DeviceServicesActivity extends Activity {
 
     private TextView connectionState;
     private TextView dataField;
+    private Button showLocation;
     private ExpandableListView gattServicesList;
     private TiServicesAdapter gattServiceAdapter;
 
@@ -64,7 +67,8 @@ public class DeviceServicesActivity extends Activity {
     private boolean isConnected = false;
 
     private TiSensor<?> activeSensor;
-
+    private GPSService gps;
+    private Location loc;
     // Code to manage Service lifecycle.
     private final ServiceConnection serviceConnection = new ServiceConnection() {
 
@@ -184,7 +188,37 @@ public class DeviceServicesActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.gatt_services_characteristics);
+        
+        gps = new GPSService(this);
+        if(!gps.canGetLocation()){
+        	gps.showSettingsAlert();
+        }   
+        showLocation = (Button) findViewById(R.id.gps_indicator);
+        showLocation.setOnClickListener(new View.OnClickListener() {
+            
+           @Override
+           public void onClick(View arg0) {        
 
+               // check if GPS enabled     
+               if(gps.canGetLocation()){
+                    
+                   double latitude = gps.getLatitude();
+                   double longitude = gps.getLongitude();
+                   // Location loc can be used if necessary
+                   loc = gps.getLocation();
+                   
+                   dataField.setText("Your Location is - \nLat: " + latitude + "\nLong: " + longitude);    
+               }else{
+                   // can't get location
+                   // GPS or Network is not enabled
+            	   dataField.setText("No data");  
+               }
+                
+           }
+       });
+
+        ((TextView) findViewById(R.id.device_address)).setText(deviceAddress);
+      
         final Intent intent = getIntent();
         deviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         deviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
@@ -222,6 +256,7 @@ public class DeviceServicesActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        gps.stopUsingGPS();
         unbindService(serviceConnection);
         bleService = null;
     }
