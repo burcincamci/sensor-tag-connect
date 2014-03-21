@@ -87,6 +87,12 @@
             android:textStyle="bold"
             android:textAppearance="?android:textAppearanceMedium"
             android:background="@android:drawable/divider_horizontal_bright" />
+    <Button
+            android:id="@+id/gps_indicator"
+            android:text="@string/label_gps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:groupIndicator="@null"/>
     <ExpandableListView
             android:id="@+id/gatt_services_list"
             android:layout_width="match_parent"
