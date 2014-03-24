@@ -271,7 +271,8 @@ public class DeviceServicesActivity extends Activity {
             menu.findItem(R.id.menu_connect).setVisible(true);
             menu.findItem(R.id.menu_disconnect).setVisible(false);
         }
-        	menu.findItem(R.id.menu_log).setVisible(true);
+        
+        menu.findItem(R.id.menu_log).setVisible(true);
         return true;
     }
 
@@ -322,7 +323,7 @@ public class DeviceServicesActivity extends Activity {
         gattServiceAdapter.setServiceListener(demoClickListener);
         gattServicesList.setAdapter(gattServiceAdapter);
     }
-
+    
     private static IntentFilter makeGattUpdateIntentFilter() {
         final IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(BleService.ACTION_GATT_CONNECTED);
