@@ -21,7 +21,7 @@ public class TiAccelerometerSensor extends TiSensor<float[]> implements TiPeriod
 
     private int period = 100;
 
-    TiAccelerometerSensor() {
+    public TiAccelerometerSensor() {
         super();
     }
 

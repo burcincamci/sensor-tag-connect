@@ -1,9 +1,11 @@
 package sample.ble.sensortag;
 
+import sample.ble.sensortag.adapters.TiServicesAdapter;
 import android.os.Bundle;
 import android.app.Activity;
 import android.content.Intent;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -18,8 +20,8 @@ public class CreateLogActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActionBar().setTitle(R.string.title_create_log);
+		getActionBar().setHomeButtonEnabled(true);
 		setContentView(R.layout.activity_create_log);
-		
 		addListenerOnButton();
 	}
 
@@ -57,5 +59,15 @@ public class CreateLogActivity extends Activity {
 		getMenuInflater().inflate(R.menu.create_log, menu);
 		return true;
 	}
+	
+	@Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
 }
