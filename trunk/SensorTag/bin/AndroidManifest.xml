@@ -2,8 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="sample.ble.sensortag"
     android:versionCode="1"
-    android:versionName="1.0" >
-
+    android:versionName="1.0" 
+    >
+	
     <uses-sdk
         android:minSdkVersion="18"
         android:targetSdkVersion="19" />
@@ -17,7 +18,9 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION"/>
 	<uses-permission android:name="android.permission.INTERNET" />
-
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -32,6 +35,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
         <activity android:name="sample.ble.sensortag.DeviceServicesActivity" />
         <activity android:name="sample.ble.sensortag.CreateLogActivity" />
         <activity android:name="sample.ble.sensortag.LogWriting"/>

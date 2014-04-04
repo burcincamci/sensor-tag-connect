@@ -129,7 +129,7 @@ public class BleService extends Service {
         final Intent intent = new Intent(action);
         sendBroadcast(intent);
     }
-
+    
     private void broadcastUpdate(final String action,
                                  final BluetoothGattCharacteristic characteristic) {
         final Intent intent = new Intent(action);
@@ -140,7 +140,7 @@ public class BleService extends Service {
         if (sensor != null) {
             sensor.onCharacteristicChanged(characteristic);
             final String text = sensor.getDataString();
-            intent.putExtra(EXTRA_TEXT, text);
+            intent.putExtra(EXTRA_TEXT, sensor.getName() + "|" +  text);
             sendBroadcast(intent);
         } else {
             // For all other profiles, writes the data formatted in HEX.
@@ -154,6 +154,34 @@ public class BleService extends Service {
         }
         sendBroadcast(intent);
     }
+    private void broadcastUpdate(final String action,
+    		final List <BluetoothGattCharacteristic> characteristicList) {
+    	final Intent intent = new Intent(action);
+    	
+    	for(BluetoothGattCharacteristic characteristic:characteristicList) {
+    		intent.putExtra(EXTRA_SERVICE_UUID, characteristic.getService().getUuid().toString());
+	    	intent.putExtra(EXTRA_CHARACTERISTIC_UUID, characteristic.getUuid().toString());
+	
+	    	final TiSensor<?> sensor = TiSensors.getSensor(characteristic.getService().getUuid().toString());
+	    	if (sensor != null) {
+	    		sensor.onCharacteristicChanged(characteristic);
+	    		final String text = sensor.getDataString();
+	    		intent.putExtra(EXTRA_TEXT, text);
+	    		sendBroadcast(intent);
+	    	} else {
+	    		// For all other profiles, writes the data formatted in HEX.
+	    		final byte[] data = characteristic.getValue();
+	    		if (data != null && data.length > 0) {
+	    			final StringBuilder stringBuilder = new StringBuilder(data.length);
+	    			for (byte byteChar : data)
+	    				stringBuilder.append(String.format("%02X ", byteChar));
+	    			intent.putExtra(EXTRA_TEXT, new String(data) + "\n" + stringBuilder.toString());
+	    		}
+	    	}
+    	sendBroadcast(intent);
+    	}
+    }
+    
 
     public class LocalBinder extends Binder {
         public BleService getService() {
