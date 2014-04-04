@@ -2,6 +2,8 @@ package sample.ble.sensortag.sensor;
 
 import java.util.HashMap;
 
+import sample.ble.sensortag.info.TiGapSerivce;
+
 /**
  * Created by steven on 9/4/13.
  */
@@ -10,7 +12,8 @@ public class TiSensors {
     private static HashMap<String, TiSensor<?>> SENSORS = new HashMap<String, TiSensor<?>>();
 
     static {
-        final TiAccelerometerSensor accelerometerSensor = new TiAccelerometerSensor();
+        
+    	final TiAccelerometerSensor accelerometerSensor = new TiAccelerometerSensor();
         final TiGyroscopeSensor gyroscopeSensor = new TiGyroscopeSensor();
         final TiHumiditySensor humiditySensor = new TiHumiditySensor();
         final TiKeysSensor keysSensor = new TiKeysSensor();
@@ -19,6 +22,7 @@ public class TiSensors {
         final TiTemperatureSensor temperatureSensor = new TiTemperatureSensor();
         final TiTestSensor testSensor = new TiTestSensor();
 
+        
         SENSORS.put(accelerometerSensor.getServiceUUID(), accelerometerSensor);
         SENSORS.put(gyroscopeSensor.getServiceUUID(), gyroscopeSensor);
         SENSORS.put(humiditySensor.getServiceUUID(), humiditySensor);

@@ -36,11 +36,11 @@ public class BluetoothGattExecutor extends BluetoothGattCallback {
     private final LinkedList<BluetoothGattExecutor.ServiceAction> queue = new LinkedList<ServiceAction>();
     private volatile ServiceAction currentAction;
 
-    public void update(final TiSensor sensor) {
+    public void update(final TiSensor<?> sensor) {
         queue.add(sensor.update());
     }
 
-    public void enable(TiSensor sensor, boolean enable) {
+    public void enable(TiSensor<?> sensor, boolean enable) {
         final ServiceAction[] actions = sensor.enable(enable);
         for ( ServiceAction action : actions ) {
             this.queue.add(action);

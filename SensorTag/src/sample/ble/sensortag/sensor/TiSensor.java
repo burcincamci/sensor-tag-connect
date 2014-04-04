@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 
+import java.io.Serializable;
 import java.util.UUID;
 
 import sample.ble.sensortag.BluetoothGattExecutor;
@@ -12,7 +13,7 @@ import sample.ble.sensortag.BluetoothGattExecutor;
 /**
  * Created by steven on 9/3/13.
  */
-public abstract class TiSensor<T> {
+public abstract class TiSensor<T> implements Serializable{
 
     private static String CHARACTERISTIC_CONFIG = "00002902-0000-1000-8000-00805f9b34fb";
 

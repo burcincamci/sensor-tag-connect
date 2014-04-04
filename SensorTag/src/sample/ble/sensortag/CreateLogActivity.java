@@ -1,9 +1,16 @@
 package sample.ble.sensortag;
 
-import sample.ble.sensortag.adapters.TiServicesAdapter;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,21 +21,25 @@ import android.widget.Spinner;
 
 public class CreateLogActivity extends Activity {
 
-	Button start_button;
-	
+	Button save_button;
+	Intent coming;
+	String log_data;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getActionBar().setTitle(R.string.title_create_log);
 		getActionBar().setHomeButtonEnabled(true);
 		setContentView(R.layout.activity_create_log);
+		coming = getIntent();
+		log_data = coming.getStringExtra("Log_Data");
 		addListenerOnButton();
 	}
 
 	public void addListenerOnButton() {
-		start_button = (Button) findViewById(R.id.start_button);		 
-		start_button.setOnClickListener(new OnClickListener() {
+		save_button = (Button) findViewById(R.id.save_button);		 
+		save_button.setOnClickListener(new OnClickListener() {
 			
+
 			@Override
 			public void onClick(View v) {
 				
@@ -39,19 +50,36 @@ public class CreateLogActivity extends Activity {
 				String who = whoText.getText().toString();
 				String where = whereSpinner.getSelectedItem().toString();
 				String what = whatSpinner.getSelectedItem().toString();
-				String filename = who + "_" + where + "_" + what;
-				
-				writeLog(filename);			
-				
+				String filename = who + "_" + where + "_" + what + ".txt";
+		
+				FileOutputStream outputStream;
+
+				try {
+				  outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+				  outputStream.write(log_data.getBytes());
+				  outputStream.close();
+				} catch (Exception e) {
+				  e.printStackTrace();
+				}
+				onBackPressed();
 			}
 		});		
 	}
 	
-	public void writeLog(String filename) {
-		Intent intent = new Intent(this, LogWriting.class);
-        intent.putExtra(LogWriting.LOG_FILE_NAME, filename);
-        startActivity(intent);				
+	public boolean saveFile(Context context, String mytext, String filename){
+	    Log.i("TESTE", "SAVE");
+	    try {
+	        FileOutputStream fos = context.openFileOutput(filename,Context.MODE_PRIVATE);
+	        Writer out = new OutputStreamWriter(fos);
+	        out.write(mytext);
+	        out.close();
+	        return true;
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        return false;
+	    }
 	}
+	
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {

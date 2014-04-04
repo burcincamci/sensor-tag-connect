@@ -152,6 +152,10 @@ public class DeviceScanActivity extends ListActivity {
 
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
+//    	final ListView lView = (ListView) findViewById(R.id.ListView01);
+//    	lView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, items));
+//    	lView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+    	
         final BluetoothDevice device = leDeviceListAdapter.getDevice(position);
         if (device == null)
             return;
