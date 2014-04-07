@@ -49,6 +49,7 @@ import java.util.List;
 import sample.ble.sensortag.adapters.TiServicesAdapter;
 import sample.ble.sensortag.info.TiInfoService;
 import sample.ble.sensortag.info.TiInfoServices;
+import sample.ble.sensortag.sensor.TiPeriodicalSensor;
 import sample.ble.sensortag.sensor.TiSensor;
 import sample.ble.sensortag.sensor.TiSensors;
 
@@ -281,7 +282,13 @@ public class DeviceServicesActivity extends Activity {
                             bleService.readCharacteristic(characteristic);
                             return ;
                         }
+    	                
     	                bleService.enableSensor(sensor, true);
+    	                if (sensor instanceof TiPeriodicalSensor) {
+                            final TiPeriodicalSensor periodicalSensor = (TiPeriodicalSensor) sensor;
+                            periodicalSensor.setPeriod(periodicalSensor.getMinPeriod());
+                        }
+    	                bleService.updateSensor(sensor);
     	                activeSensors.add(sensor);
     	               
     	               
