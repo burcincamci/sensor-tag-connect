@@ -84,11 +84,17 @@ public class DeviceServicesActivity extends Activity {
     double latitude ;
     double longitude ;
     private Location loc;
-    static String gps_data = "";
-    static String acc_data = "";
-    static String mag_data = "";
+    static String tmp_data = "";
+	static String acc_data = "";
+	static String hum_data = "";
+	static String mag_data = "";
+	static String prs_data = "";
+	static String gyr_data = "";
+	static String key_data = "";
+	static String gps_data = "";
     private boolean gps_enabled = false;
     String [] data;
+    ArrayList <Integer> data_index = new ArrayList<Integer>();
     ArrayList <Integer> active_index = new ArrayList<Integer>();
     static String log_data = "";
     private LinkedList <TiSensor<?> > activeSensors = new LinkedList<TiSensor<?>>();
@@ -122,82 +128,157 @@ public class DeviceServicesActivity extends Activity {
     //                        or notification operations.
     
     private final BroadcastReceiver gattUpdateReceiver = new BroadcastReceiver() {
-        @SuppressLint("DefaultLocale") @Override
-        public void onReceive(Context context, Intent intent) {
-            final String action = intent.getAction();
-            if (BleService.ACTION_GATT_CONNECTED.equals(action)) {
-                isConnected = true;
-                updateConnectionState(R.string.connected);
-                invalidateOptionsMenu();
-            } else if (BleService.ACTION_GATT_DISCONNECTED.equals(action)) {
-                isConnected = false;
-                updateConnectionState(R.string.disconnected);
-                invalidateOptionsMenu();
-                clearUI();
-            } else if (BleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
-                // Show all the supported services and characteristics on the user interface.
-                displayGattServices(bleService.getSupportedGattServices());
-            } else if (BleService.ACTION_DATA_AVAILABLE.equals(action)) {
-            	String temp = intent.getStringExtra(BleService.EXTRA_TEXT);
-            	int index  = temp.indexOf('|');
-            	String sensor = temp.substring(0, 3);
-            	String sensor_data = temp.substring(index+1);
-            	String [] coordinates = new String [3];
-            
-            	String temp_acc_data ;
-            	if(sensor.equalsIgnoreCase("ACC") ){
-            		coordinates = sensor_data.split("\n");
-            		for(int i = 0 ; i < 3 ; i++) {
-            			coordinates[i] = coordinates[i].substring(2);
-            		}
-            		temp_acc_data = coordinates[0] + "\t" + coordinates[1]+ "\t" + coordinates[2] ;
-            	}
-            	else{
-            		temp_acc_data = acc_data;
-            	}
-            	if(!temp_acc_data.equals(acc_data)) {
-            		acc_data = temp_acc_data;	
-            		log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n";
-            	}
-            	
-            	String temp_mag_data ;
-            	if(sensor.equalsIgnoreCase("MAG") ){
-            		coordinates = sensor_data.split("\n");
-            		for(int i = 0 ; i < 3 ; i++) {
-            			coordinates[i] = coordinates[i].substring(2);
-            		}
-            		temp_mag_data = coordinates[0] + "\t" + coordinates[1]+ "\t" + coordinates[2] ;
-            	}else{
-            		temp_mag_data = mag_data;
-            	}
-            	if(!temp_mag_data.equals(mag_data)) {
-            		mag_data = temp_mag_data;	
-            		log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n";
-            	}
-            	
-            	String temp_gps_data ;
-            	if(gps.canGetLocation() && gps_enabled){
-	                    
-	                   latitude = gps.getLatitude();
-	                   longitude = gps.getLongitude();
-	                   // Location loc can be used if necessary
-	                   loc = gps.getLocation();
-	                   temp_gps_data = longitude + "\t" + latitude ; 
+		@SuppressLint("DefaultLocale") @Override
+		public void onReceive(Context context, Intent intent) {
+			final String action = intent.getAction();
+			if (BleService.ACTION_GATT_CONNECTED.equals(action)) {
+				isConnected = true;
+				updateConnectionState(R.string.connected);
+				invalidateOptionsMenu();
+			} else if (BleService.ACTION_GATT_DISCONNECTED.equals(action)) {
+				isConnected = false;
+				updateConnectionState(R.string.disconnected);
+				invalidateOptionsMenu();
+				clearUI();
+			} else if (BleService.ACTION_GATT_SERVICES_DISCOVERED.equals(action)) {
+				// Show all the supported services and characteristics on the user interface.
+				displayGattServices(bleService.getSupportedGattServices());
+			} else if (BleService.ACTION_DATA_AVAILABLE.equals(action)) {
+				String temp = intent.getStringExtra(BleService.EXTRA_TEXT);
+				int index  = temp.indexOf('|');
+				String sensor = temp.substring(0, 3);
+				String sensor_data = temp.substring(index+1); 
+				String [] coordinates = new String [3]; // for accelerometer, magnetometer and gyroscope
+				String [] one_two = new String[2]; // for temperature
 
-	            }else{
-	            	   temp_gps_data = gps_data ;
-	            }
-            	if(!temp_gps_data.equals(gps_data)) {
-            		gps_data = temp_gps_data;	
-            		log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
-            	}
-            	
-            	
-            	
-                displayData(temp);
-            }
-        }
-    };
+				// Temperature Data parsing
+				String temp_tmp_data ;
+				if(sensor.equalsIgnoreCase("TEM") ){
+					one_two = sensor_data.split("\n");           		
+					one_two[0] = one_two[0].substring(8);
+					one_two[1] = one_two[1].substring(7);
+					temp_tmp_data = one_two[0] + "\t" + one_two[1] ;
+				}
+				else{
+					temp_tmp_data = tmp_data;
+				}
+				if(!temp_tmp_data.equals(tmp_data)) {
+					tmp_data = temp_tmp_data;	
+					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + tmp_data + "\n";
+				}
+
+				// Accelerometer Data parsing
+				String temp_acc_data ;
+				if(sensor.equalsIgnoreCase("ACC") ){
+					coordinates = sensor_data.split("\n");
+					for(int i = 0 ; i < 3 ; i++) {
+						coordinates[i] = coordinates[i].substring(2);
+					}
+					temp_acc_data = coordinates[0] + "\t" + coordinates[1]+ "\t" + coordinates[2] ;
+				}
+				else{
+					temp_acc_data = acc_data;
+				}
+				if(!temp_acc_data.equals(acc_data)) {
+					acc_data = temp_acc_data;	
+					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n";
+				}
+
+				// Humidity Data parsing
+				String temp_hum_data ;
+				if(sensor.equalsIgnoreCase("HUM") ){
+					temp_hum_data = sensor_data  ;
+				}
+				else{
+					temp_hum_data = hum_data;
+				}
+				if(!temp_hum_data.equals(hum_data)) {
+					hum_data = temp_hum_data;	
+					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + hum_data + "\n";
+				}
+
+				// Magnetometer Data parsing
+				String temp_mag_data ;
+				if(sensor.equalsIgnoreCase("MAG") ){
+					coordinates = sensor_data.split("\n");
+					for(int i = 0 ; i < 3 ; i++) {
+						coordinates[i] = coordinates[i].substring(2);
+					}
+					temp_mag_data = coordinates[0] + "\t" + coordinates[1]+ "\t" + coordinates[2] ;
+				}else{
+					temp_mag_data = mag_data;
+				}
+				if(!temp_mag_data.equals(mag_data)) {
+					mag_data = temp_mag_data;	
+					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n";
+				}
+
+				// Pressure Data parsing
+				String temp_prs_data ;
+				if(sensor.equalsIgnoreCase("PRE") ){            		
+					temp_prs_data = sensor_data ;
+				}else{
+					temp_prs_data = prs_data;
+				}
+				if(!temp_prs_data.equals(prs_data)) {
+					prs_data = temp_prs_data;	
+					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + prs_data + "\n";
+				}
+
+				// Gyrposcope Data parsing
+				String temp_gyr_data ;
+				if(sensor.equalsIgnoreCase("GYR") ){
+					coordinates = sensor_data.split("\n");
+					for(int i = 0 ; i < 3 ; i++) {
+						coordinates[i] = coordinates[i].substring(2);
+					}
+					temp_gyr_data = coordinates[0] + "\t" + coordinates[1]+ "\t" + coordinates[2] ;
+				}else{
+					temp_gyr_data = gyr_data;
+				}
+				if(!temp_gyr_data.equals(gyr_data)) {
+					gyr_data = temp_gyr_data;	
+					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + gyr_data + "\n";
+				}
+
+				// Simple Keys Data Parsing
+				String temp_key_data ;
+				if(sensor.equalsIgnoreCase("SIM") ){
+					one_two = sensor_data.split("_");           		
+					temp_key_data = one_two[0] + "\t" + one_two[1] ;
+				}
+				else{
+					temp_key_data = key_data;
+				}
+				if(!temp_key_data.equals(key_data)) {
+					key_data = temp_key_data;	
+					log_data += System.currentTimeMillis() + "\t" + "KEY" + "\t" + key_data + "\n";
+				}
+
+				// GPS Data Parsing
+				String temp_gps_data ;
+				if(gps.canGetLocation() && gps_enabled){
+
+					latitude = gps.getLatitude();
+					longitude = gps.getLongitude();
+					// Location loc can be used if necessary
+					loc = gps.getLocation();
+					temp_gps_data = longitude + "\t" + latitude ; 
+
+				}else{
+					temp_gps_data = gps_data ;
+				}
+				if(!temp_gps_data.equals(gps_data)) {
+					gps_data = temp_gps_data;	
+					log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
+				}
+
+
+
+				displayData(temp);
+			}
+		}
+	};
 
     // If a given GATT characteristic is selected, check for supported features.  This sample
     // demonstrates 'Read' and 'Notify' features.  See
@@ -238,6 +319,8 @@ public class DeviceServicesActivity extends Activity {
     			@Override
     			public void onClick(View v) {
     				
+    				startLog.setEnabled(false);
+    				stopLog.setEnabled(true);
     				for(TiSensor<?> sensor : activeSensors){
     					if(sensor != null)
     						bleService.enableSensor(sensor, false);
@@ -251,8 +334,10 @@ public class DeviceServicesActivity extends Activity {
     				for (int i = 0; i < size; i++) {
     					buffer = settings.getString(String.valueOf((int)i),"false");
     					if(buffer.equals("true"))
-    						if(i != size-1)
-    							active_index.add(i);
+    						if(i != size-1){
+    							int index = data_index.get(i);
+    							active_index.add(index);
+    						}
     						else if(i == size-1){
     							
     							gps_enabled = true;
@@ -337,8 +422,10 @@ public class DeviceServicesActivity extends Activity {
         super.onCreate(savedInstanceState); 
 
         setContentView(R.layout.gatt_services_characteristics); 
-
-
+        
+        log_data = "";
+        data = null;
+        
         gps = new GPSService(this);
         if(!gps.canGetLocation()){
         	gps.showSettingsAlert();
@@ -376,13 +463,14 @@ public class DeviceServicesActivity extends Activity {
 				}
 				activeSensors.clear();
 				active_index.clear();
-     		   createLog();
+		       
+     		    createLog();
      		   
      	   }
         });
         
-        
-
+        startLog.setEnabled(true);
+		stopLog.setEnabled(false);
         
         connectionState = (TextView) findViewById(R.id.connection_state);   
         dataField = (TextView) findViewById(R.id.data_value);  
@@ -393,14 +481,12 @@ public class DeviceServicesActivity extends Activity {
         final Intent gattServiceIntent = new Intent(this, BleService.class);
         bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE);
     }
-    private String [] createData(ExpandableListView GSL) {
+    private void createData(ExpandableListView GSL) {
     	
 
    
     	int group_count = GSL.getCount();
-     	
-    	
-    	String [] data = new String [group_count+1];
+     	ArrayList<String> data_temp = new ArrayList<String>();
     	ExpandableListAdapter  GSL_Adapter = GSL.getExpandableListAdapter();    	
     	
     	for(int i = 0; i < group_count ; i++) {
@@ -414,21 +500,29 @@ public class DeviceServicesActivity extends Activity {
     			String temp = "";
     			if(sensor_new != null)
     				temp = sensor_new.getName();
-    			else if(service_new != null)
-    				temp = service_new.getName();
-    			else
-    				temp = "Unknown";
-    			
-    			data[i] = temp;
+    			else if(service_new != null) {
+    				//temp = service_new.getName();
+    				temp = "Unnecessary";
+    			}
+    			else{
+    				//temp = "Unknown";
+    				temp = "Unnecessary";
+    			}
+    			if(!temp.equals("Unknown") && !temp.equals("Unnecessary"))  {
+    				data_temp.add(temp);
+    				data_index.add(i); 
+    			}
     			
     		
     	}
-    	data[group_count] = "GPS";
-    	for(String s: data)
-    		Log.i("a", s);
+    	data_temp.add("GPS") ;
+    	int size = data_temp.size();
+    	data = new String[size];
+    	for(int i = 0; i < size ; i++) {
+    		data[i] = data_temp.get(i);
+    	}
     	
     	
-    	return data;
     }
     @Override
     protected void onResume() {
@@ -503,7 +597,7 @@ public class DeviceServicesActivity extends Activity {
         });
     }
 
-    private void displayData(String data) {   // bunu koymadm
+    private void displayData(String data) {   
         if (data != null) {
             dataField.setText(data);
         }
@@ -516,7 +610,7 @@ public class DeviceServicesActivity extends Activity {
         gattServiceAdapter = new TiServicesAdapter(this, gattServices);
         gattServiceAdapter.setServiceListener(demoClickListener);
         gattServicesList.setAdapter(gattServiceAdapter);
-        data = createData(gattServicesList);
+        createData(gattServicesList);
         ela = new SampleExpandableListAdapter(context, this, data);
         expandableListView.setAdapter(ela);
         expandableListView = (ExpandableListView)findViewById(R.id.expandableListView1);
