@@ -61,7 +61,9 @@ public class CreateLogActivity extends Activity {
 				} catch (Exception e) {
 				  e.printStackTrace();
 				}
-				onBackPressed();
+				Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage( getBaseContext().getPackageName() );
+				i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+				startActivity(i);
 			}
 		});		
 	}
@@ -81,13 +83,7 @@ public class CreateLogActivity extends Activity {
 	}
 	
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.create_log, menu);
-		return true;
-	}
-	
+
 	@Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
