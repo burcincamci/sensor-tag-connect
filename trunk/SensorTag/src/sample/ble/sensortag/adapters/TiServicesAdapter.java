@@ -3,7 +3,7 @@ package sample.ble.sensortag.adapters;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.Context;
-import android.os.Parcelable;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +11,7 @@ import android.widget.BaseExpandableListAdapter;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.io.Serializable;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
