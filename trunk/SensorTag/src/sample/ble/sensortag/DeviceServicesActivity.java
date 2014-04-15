@@ -28,7 +28,9 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.media.MediaScannerConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -42,6 +44,9 @@ import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
 
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -83,7 +88,7 @@ public class DeviceServicesActivity extends Activity {
     private GPSService gps;
     double latitude ;
     double longitude ;
-    private Location loc;
+	private Location loc;
     static String tmp_data = "";
 	static String acc_data = "";
 	static String hum_data = "";
@@ -98,6 +103,9 @@ public class DeviceServicesActivity extends Activity {
     ArrayList <Integer> active_index = new ArrayList<Integer>();
     static String log_data = "";
     private LinkedList <TiSensor<?> > activeSensors = new LinkedList<TiSensor<?>>();
+    File dir;
+    File file;
+    FileOutputStream out;
     
     
     // Code to manage Service lifecycle.
@@ -164,7 +172,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_tmp_data.equals(tmp_data)) {
 					tmp_data = temp_tmp_data;	
-					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + tmp_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + tmp_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + tmp_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// Accelerometer Data parsing
@@ -181,7 +195,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_acc_data.equals(acc_data)) {
 					acc_data = temp_acc_data;	
-					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// Humidity Data parsing
@@ -194,7 +214,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_hum_data.equals(hum_data)) {
 					hum_data = temp_hum_data;	
-					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + hum_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + hum_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + hum_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// Magnetometer Data parsing
@@ -210,7 +236,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_mag_data.equals(mag_data)) {
 					mag_data = temp_mag_data;	
-					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// Pressure Data parsing
@@ -222,7 +254,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_prs_data.equals(prs_data)) {
 					prs_data = temp_prs_data;	
-					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + prs_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + prs_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + prs_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// Gyrposcope Data parsing
@@ -238,7 +276,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_gyr_data.equals(gyr_data)) {
 					gyr_data = temp_gyr_data;	
-					log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + gyr_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + gyr_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + gyr_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// Simple Keys Data Parsing
@@ -252,7 +296,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_key_data.equals(key_data)) {
 					key_data = temp_key_data;	
-					log_data += System.currentTimeMillis() + "\t" + "KEY" + "\t" + key_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + "KEY" + "\t" + key_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + "KEY" + "\t" + key_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 				// GPS Data Parsing
@@ -270,7 +320,13 @@ public class DeviceServicesActivity extends Activity {
 				}
 				if(!temp_gps_data.equals(gps_data)) {
 					gps_data = temp_gps_data;	
-					log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
+					//log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
+					try {
+						out.write((System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n").getBytes());
+						out.flush();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 
 
@@ -327,6 +383,14 @@ public class DeviceServicesActivity extends Activity {
     				}
     				activeSensors.clear();
     				active_index.clear();
+    				
+					file = new File(dir, "NewLog.txt");
+					if (file.exists ()) file.delete ();
+					try {
+						out = new FileOutputStream(file);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
     				
     				SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);  
     				String buffer = null; 		    
@@ -426,15 +490,15 @@ public class DeviceServicesActivity extends Activity {
         log_data = "";
         data = null;
         
+        File sdCard = Environment.getExternalStorageDirectory();
+		dir = new File (sdCard.getAbsolutePath() + "/logs");
+		dir.mkdirs();
+        
         gps = new GPSService(this);
         if(!gps.canGetLocation()){
         	gps.showSettingsAlert();
         }   
 
-      
-       
-
-       
       
         final Intent intent = getIntent();
         deviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -457,6 +521,7 @@ public class DeviceServicesActivity extends Activity {
  		
      	   @Override
      	   public void onClick(View v) {
+     		  
      		  for(TiSensor<?> sensor : activeSensors){
 					if(sensor != null)
 						bleService.enableSensor(sensor, false);
@@ -464,6 +529,12 @@ public class DeviceServicesActivity extends Activity {
 				activeSensors.clear();
 				active_index.clear();
 		       
+				try {
+					out.close();
+					MediaScannerConnection.scanFile(DeviceServicesActivity.this, new String[] {file.getAbsolutePath()} , null, null); //to refresh file cache
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
      		    createLog();
      		   
      	   }

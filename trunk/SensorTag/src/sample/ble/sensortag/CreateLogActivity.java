@@ -61,20 +61,27 @@ public class CreateLogActivity extends Activity {
 				//if(isExternalStorageWritable()){
 					File sdCard = Environment.getExternalStorageDirectory();
 					File dir = new File (sdCard.getAbsolutePath() + "/logs");
-					dir.mkdirs();
-					File file = new File(dir, filename);
-					if (file.exists ()) file.delete (); 
-					try {
-						FileOutputStream out = new FileOutputStream(file);
-						out.write(log_data.getBytes());
-						out.flush();
-						out.close();
-						MediaScannerConnection.scanFile(CreateLogActivity.this, new String[] {file.getAbsolutePath()} , null, null); //to refresh file cache
-
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
+//					dir.mkdirs();
+//					File file = new File(dir, filename);
+//					if (file.exists ()) file.delete (); 
+//					try {
+//						FileOutputStream out = new FileOutputStream(file);
+//						out.write(log_data.getBytes());
+//						out.flush();
+//						out.close();
+//						MediaScannerConnection.scanFile(CreateLogActivity.this, new String[] {file.getAbsolutePath()} , null, null); //to refresh file cache
+//
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
 				//}
+				
+				File oldfile = new File(dir, "NewLog.txt");
+				File newfile = new File(dir, filename);
+				
+				if(oldfile.exists())
+					oldfile.renameTo(newfile);
+				
 
 
 				Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage( getBaseContext().getPackageName() );
