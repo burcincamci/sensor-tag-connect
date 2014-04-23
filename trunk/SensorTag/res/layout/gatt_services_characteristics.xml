@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2013 The Android Open Source Project
+<!--
+     Copyright (C) 2013 The Android Open Source Project
 
      Licensed under the Apache License, Version 2.0 (the "License");
      you may not use this file except in compliance with the License.
@@ -13,112 +14,120 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:orientation="vertical"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="10dp" >
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingTop="10dp">
-    <LinearLayout
-            android:orientation="horizontal"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:text="@string/label_device_address"
+            android:textAppearance="?android:textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/device_address"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp">
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/label_device_address"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:layout_marginRight="5dp"/>
-        <TextView
-                android:id="@+id/device_address"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:textAppearanceMedium"/>
+            android:textAppearance="?android:textAppearanceMedium" />
     </LinearLayout>
+
     <LinearLayout
-            android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:text="@string/label_state"
+            android:textAppearance="?android:textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/connection_state"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp">
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/label_state"
-                android:layout_marginRight="5dp"/>
-        <TextView
-                android:id="@+id/connection_state"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/disconnected"/>
+            android:text="@string/disconnected"
+            android:textAppearance="?android:textAppearanceMedium" />
     </LinearLayout>
+
     <LinearLayout
-            android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp" >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:text="@string/label_data"
+            android:textAppearance="?android:textAppearanceMedium" />
+
+        <TextView
+            android:id="@+id/data_value"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp">
-        <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/label_data"
-                android:layout_marginRight="5dp"/>
-        <TextView
-                android:id="@+id/data_value"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAppearance="?android:textAppearanceMedium"
-                android:text="@string/no_data"
-                android:minLines="3"/>
+            android:minLines="3"
+            android:text="@string/no_data"
+            android:textAppearance="?android:textAppearanceMedium" />
     </LinearLayout>
+
     <TextView
-            android:layout_width="match_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/divider_horizontal_bright"
+        android:paddingBottom="4dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="4dp"
+        android:text="@string/label_services"
+        android:textAppearance="?android:textAppearanceMedium"
+        android:textStyle="bold" />
+
+    <ExpandableListView
+        android:id="@+id/expandableListView1"
+        android:layout_width="match_parent"
+        android:layout_height="243dp" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/log_start"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_services"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:textStyle="bold"
-            android:textAppearance="?android:textAppearanceMedium"
-            android:background="@android:drawable/divider_horizontal_bright" />
+            android:layout_weight="1"
+            android:groupIndicator="@null"
+            android:text="@string/start_button" />
 
-   <ExpandableListView
-       android:id="@+id/expandableListView1"
-       android:layout_width="match_parent"
-       android:layout_height="243dp" />
-   
-   <LinearLayout
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:orientation="horizontal"
-       android:paddingLeft="10dp"
-       android:paddingRight="10dp"
-        >
-       <Button
-           android:id="@+id/log_start"
-           android:layout_width="133dp"
-           android:layout_height="wrap_content"
-           android:layout_weight="1"
-           android:groupIndicator="@null"
-           android:text="@string/start_button" />
-       <Button
-           android:id="@+id/log_stop"
-           android:layout_width="134dp"
-           android:layout_height="wrap_content"
-           android:layout_weight="1"
-           android:groupIndicator="@null"
-           android:text="@string/stop_button" />
-   </LinearLayout>
+        <Button
+            android:id="@+id/log_stop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:groupIndicator="@null"
+            android:text="@string/stop_button" />
+    </LinearLayout>
 
-   	<ExpandableListView
-   	    android:id="@+id/gatt_services_list"
-   	    android:layout_width="match_parent"
-   	    android:layout_height="match_parent" />
-   
+    <ExpandableListView
+        android:id="@+id/gatt_services_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
 </LinearLayout>
