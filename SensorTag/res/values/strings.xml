@@ -28,6 +28,7 @@
     <string name="disconnected">Disconnected</string>
     <string name="title_devices">BLE Device Scan</string>
     <string name="title_create_log">Create a New Log</string>
+    <string name="title_user_type">User Type</string>
     <string name="title_write_log">Writing Log</string>
     <string name="error_bluetooth_not_supported">Bluetooth not supported.</string>
     <string name="unknown_device">Unknown device</string>
@@ -39,7 +40,17 @@
     <string name="start_button">Start</string>
     <string name="stop_button">Stop</string>
     <string name="save_button">Save</string>
-
+    <string name="ready_button">Ready</string>
+    
+    <string name="dialog_title">Activity Type</string>
+    <string name="standing_message">Are you STANDING?</string>
+	<string name="walking_message">Are you WALKING?</string>
+	<string name="running_message">Are you RUNNING?</string>
+	<string name="hill_message">Are you moving on HILL?</string>
+	<string name="stairs_message">Are you moving on STAIRS?</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_expandablelist">ExpandablelistActivity</string>

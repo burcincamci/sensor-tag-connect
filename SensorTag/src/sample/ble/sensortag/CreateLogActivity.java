@@ -2,18 +2,14 @@ package sample.ble.sensortag;
 
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 
-import android.media.MediaScannerConnection;
+
 import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
-import android.content.Context;
+
 import android.content.Intent;
-import android.util.Log;
+
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -54,9 +50,6 @@ public class CreateLogActivity extends Activity {
 				String what = whatSpinner.getSelectedItem().toString();
 				String filename = who + "_" + where + "_" + what + ".txt";
 
-	
-
-
 
 				//if(isExternalStorageWritable()){
 					File sdCard = Environment.getExternalStorageDirectory();
@@ -91,19 +84,6 @@ public class CreateLogActivity extends Activity {
 		});		
 	}
 
-	public boolean saveFile(Context context, String mytext, String filename){
-		Log.i("TESTE", "SAVE");
-		try {
-			FileOutputStream fos = context.openFileOutput(filename,Context.MODE_PRIVATE);
-			Writer out = new OutputStreamWriter(fos);
-			out.write(mytext);
-			out.close();
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
 
 
 
