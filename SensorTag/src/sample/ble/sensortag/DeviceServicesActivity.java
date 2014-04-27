@@ -106,6 +106,8 @@ public class DeviceServicesActivity extends Activity {
 	static String key_data = "";
 	static String gps_data = "";
 	static String activity_final = "";
+	static String activity = "";
+	static String shown_activity = "";
 	private boolean gps_enabled = false;
 	String [] data;
 	ArrayList <Integer> data_index = new ArrayList<Integer>();
@@ -116,18 +118,23 @@ public class DeviceServicesActivity extends Activity {
 	File file;
 	FileOutputStream out;
 
-	// bunlarý düzenle!!
+	
 	final static int windowSizeHead = 20;
 	final static int windowSizeBelt = 20;
 	final static int windowSizeSocks = 20;
+	final static int overlapRate = 5;
 
 	static String [] acc_window_head = new String [windowSizeHead];
 	static String [] acc_window_belt = new String [windowSizeBelt];
 	static String [] acc_window_socks = new String [windowSizeSocks];
+	
 	static int pointer_head = 0;
 	static int pointer_belt = 0;
 	static int pointer_socks = 0;
-
+	
+	static int activity_counter = 1;
+	static int activity_threshold = 4 ;  // Deðiþebilir! BURAYA EKLE
+	
 	// Code to manage Service lifecycle.
 	private final ServiceConnection serviceConnection = new ServiceConnection() {
 
@@ -354,6 +361,7 @@ public class DeviceServicesActivity extends Activity {
 				else {
 
 					String temp_acc_data ;
+					
 					if(sensor.equalsIgnoreCase("ACC") ){
 						coordinates = sensor_data.split("\n");
 						for(int i = 0 ; i < 3 ; i++) {
@@ -369,12 +377,13 @@ public class DeviceServicesActivity extends Activity {
 
 						int index2  = userType.indexOf('-');
 						String where = userType.substring(index2+1);
-						String activity = "";
+						
+
 						if(where.equals("Head")) {
 							int ind = pointer_head % windowSizeHead;
 							acc_window_head[ind] = acc_data;
 							pointer_head++;
-							if(pointer_head > windowSizeHead)
+							if(pointer_head >= windowSizeHead && pointer_head % overlapRate == 0)
 								activity = decisionTree(where);	
 						}
 
@@ -382,7 +391,7 @@ public class DeviceServicesActivity extends Activity {
 							int ind = pointer_belt % windowSizeBelt;
 							acc_window_belt[ind] = acc_data;
 							pointer_belt++;
-							if(pointer_belt > windowSizeBelt)
+							if(pointer_belt >= windowSizeBelt && pointer_belt % overlapRate == 0)
 								activity = decisionTree(where);	
 						}
 
@@ -390,53 +399,86 @@ public class DeviceServicesActivity extends Activity {
 							int ind = pointer_socks % windowSizeSocks;
 							acc_window_socks[ind] = acc_data;
 							pointer_socks++;
-							if(pointer_socks > windowSizeSocks)
+							if(pointer_socks >= windowSizeSocks && pointer_socks % overlapRate == 0)
 								activity = decisionTree(where);	
 						}
-						if(!activity.equals(activity_final)){
+						
+						
+						displayData("Counter: "+ activity_counter + " Acvivity_final: "+ activity_final );
+						// Þu anda her aktivitede ekrana basýyo! Hoca isterse sadece Stairs kalcak! BURAYA EKLE!
+						if(!activity.equals(activity_final)){  // new activity is coming
+							
 							activity_final = activity;
-							// 1. Instantiate an AlertDialog.Builder with its constructor
-							AlertDialog.Builder builder = new AlertDialog.Builder(DeviceServicesActivity.this);
-							if(activity_final.equals("Standing")) {
-								// 2. Chain together various setter methods to set the dialog characteristics
-								builder.setMessage(R.string.standing_message).setTitle(R.string.dialog_title);
+							activity_counter = 1;
+							
+						}
+						
+						else { // old acvivity continues
+							activity_counter++;
+						
+							if(activity_counter == activity_threshold && !shown_activity.equals(activity_final)) {
+								shown_activity = activity_final;
+								// 1. Instantiate an AlertDialog.Builder with its constructor
+								AlertDialog.Builder builder = new AlertDialog.Builder(DeviceServicesActivity.this);
+								boolean check = false;
+								if(activity_final.equals("Standing")) {
+									// 2. Chain together various setter methods to set the dialog characteristics
+									builder.setMessage(R.string.standing_message).setTitle(R.string.dialog_title);
+									check = true;
+								}
+								else if(activity_final.equals("Walking")) {
+									// 2. Chain together various setter methods to set the dialog characteristics
+									builder.setMessage(R.string.walking_message).setTitle(R.string.dialog_title);
+									check = true;
+								}
+								else if(activity_final.equals("Running")) {
+									// 2. Chain together various setter methods to set the dialog characteristics
+									builder.setMessage(R.string.running_message).setTitle(R.string.dialog_title);
+									check = true;
+								}
+								else if(activity_final.equals("Hill")) {
+									// 2. Chain together various setter methods to set the dialog characteristics
+									builder.setMessage(R.string.hill_message).setTitle(R.string.dialog_title);
+									check = true;
+								}
+								else if(activity_final.equals("Stairs")){
+									// 2. Chain together various setter methods to set the dialog characteristics
+									builder.setMessage(R.string.stairs_message).setTitle(R.string.dialog_title);
+									check = true;
+								}
+								else {
+									check = false;
+								}
+								//displayData("Acvitity: " + activity_final + " "+ check);
+								if(check){
+									// Add the buttons
+									builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+									           public void onClick(DialogInterface dialog, int id) {
+									               // User clicked OK button
+									        	   //GPS DATAYI ÝÞLE
+									           }
+									       });
+									builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+									           public void onClick(DialogInterface dialog, int id) {
+									               // User cancelled the dialog
+									        	   // YANLIÞ DATA!!!
+									           }
+									       });
+									// 3. Get the AlertDialog from create()
+									AlertDialog dialog = builder.create();
+									dialog.show();
+								}
+								
 							}
-							else if(activity_final.equals("Walking")) {
-								// 2. Chain together various setter methods to set the dialog characteristics
-								builder.setMessage(R.string.walking_message).setTitle(R.string.dialog_title);
+							if(activity_counter > activity_threshold){
+								
+								activity_counter = 1;
 							}
-							else if(activity_final.equals("Running")) {
-								// 2. Chain together various setter methods to set the dialog characteristics
-								builder.setMessage(R.string.running_message).setTitle(R.string.dialog_title);
-							}
-							else if(activity_final.equals("Hill")) {
-								// 2. Chain together various setter methods to set the dialog characteristics
-								builder.setMessage(R.string.hill_message).setTitle(R.string.dialog_title);
-							}
-							else {
-								// 2. Chain together various setter methods to set the dialog characteristics
-								builder.setMessage(R.string.stairs_message).setTitle(R.string.dialog_title);
-							}
-							// Add the buttons
-							builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-							           public void onClick(DialogInterface dialog, int id) {
-							               // User clicked OK button
-							        	   //GPS DATAYI ÝÞLE
-							           }
-							       });
-							builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-							           public void onClick(DialogInterface dialog, int id) {
-							               // User cancelled the dialog
-							        	   // YANLIÞ DATA!!!
-							           }
-							       });
-							// 3. Get the AlertDialog from create()
-							AlertDialog dialog = builder.create();
-							dialog.show();
+							
 						}
 							
 					}
-					displayData(temp);
+					//displayData(temp);
 
 				}
 			}
@@ -862,6 +904,8 @@ public class DeviceServicesActivity extends Activity {
 				if(userType.equals("Trainer"))
 					createLog();
 				else {
+					
+					// BURAYA EKLE!
 					Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage( getBaseContext().getPackageName() );
 					i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 					startActivity(i);
