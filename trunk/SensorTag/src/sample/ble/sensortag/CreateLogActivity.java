@@ -2,8 +2,6 @@ package sample.ble.sensortag;
 
 
 import java.io.File;
-
-
 import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
@@ -22,6 +20,7 @@ public class CreateLogActivity extends Activity {
 	Button save_button;
 	Intent coming;
 	String log_data;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -30,6 +29,7 @@ public class CreateLogActivity extends Activity {
 		setContentView(R.layout.activity_create_log);
 		coming = getIntent();
 		log_data = coming.getStringExtra("Log_Data");
+
 		addListenerOnButton();
 	}
 
@@ -49,11 +49,11 @@ public class CreateLogActivity extends Activity {
 				String where = whereSpinner.getSelectedItem().toString();
 				String what = whatSpinner.getSelectedItem().toString();
 				String filename = who + "_" + where + "_" + what + ".txt";
+				File sdCard = Environment.getExternalStorageDirectory();
+				File dir = new File (sdCard.getAbsolutePath() + "/logs");
 
-
-				//if(isExternalStorageWritable()){
-					File sdCard = Environment.getExternalStorageDirectory();
-					File dir = new File (sdCard.getAbsolutePath() + "/logs");
+				
+//					
 //					dir.mkdirs();
 //					File file = new File(dir, filename);
 //					if (file.exists ()) file.delete (); 
@@ -67,7 +67,7 @@ public class CreateLogActivity extends Activity {
 //					} catch (Exception e) {
 //						e.printStackTrace();
 //					}
-				//}
+//				
 				
 				File oldfile = new File(dir, "NewLog.txt");
 				File newfile = new File(dir, filename);
