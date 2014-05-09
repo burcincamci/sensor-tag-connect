@@ -38,6 +38,7 @@ import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -47,6 +48,7 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 import java.io.File;
@@ -108,17 +110,18 @@ public class DeviceServicesActivity extends Activity {
 	static String activity_final = "";
 	static String activity = "";
 	static String shown_activity = "";
+	static String activity_new = "";
 	private boolean gps_enabled = false;
 	String [] data;
 	ArrayList <Integer> data_index = new ArrayList<Integer>();
 	ArrayList <Integer> active_index = new ArrayList<Integer>();
-	static String log_data = "";
+//	static String log_data = "";
 	private LinkedList <TiSensor<?> > activeSensors = new LinkedList<TiSensor<?>>();
 	File dir;
 	File file;
 	FileOutputStream out;
 
-	
+
 	final static int windowSizeHead = 20;
 	final static int windowSizeBelt = 20;
 	final static int windowSizeSocks = 20;
@@ -127,14 +130,30 @@ public class DeviceServicesActivity extends Activity {
 	static String [] acc_window_head = new String [windowSizeHead];
 	static String [] acc_window_belt = new String [windowSizeBelt];
 	static String [] acc_window_socks = new String [windowSizeSocks];
-	
+
 	static int pointer_head = 0;
 	static int pointer_belt = 0;
 	static int pointer_socks = 0;
-	
-	static int activity_counter = 1;
-	static int activity_threshold = 4 ;  // Deðiþebilir! BURAYA EKLE
-	
+
+	static int activity_threshold = 20 ; 
+	static int activity_overlap = 5;
+
+	static String [] window_activity = new String [activity_threshold];
+
+	static int pointer_activity = 0;
+
+	static double activity_accuracy = 0.8;
+
+	static double activity_counter_standing = 0;
+	static double activity_counter_walking = 0;
+	static double activity_counter_running = 0;
+	static double activity_counter_hill = 0;
+	static double activity_counter_stairs = 0;
+	static double activity_counter = 0;	
+
+
+
+
 	// Code to manage Service lifecycle.
 	private final ServiceConnection serviceConnection = new ServiceConnection() {
 
@@ -361,7 +380,7 @@ public class DeviceServicesActivity extends Activity {
 				else {
 
 					String temp_acc_data ;
-					
+
 					if(sensor.equalsIgnoreCase("ACC") ){
 						coordinates = sensor_data.split("\n");
 						for(int i = 0 ; i < 3 ; i++) {
@@ -377,7 +396,7 @@ public class DeviceServicesActivity extends Activity {
 
 						int index2  = userType.indexOf('-');
 						String where = userType.substring(index2+1);
-						
+
 
 						if(where.equals("Head")) {
 							int ind = pointer_head % windowSizeHead;
@@ -402,81 +421,128 @@ public class DeviceServicesActivity extends Activity {
 							if(pointer_socks >= windowSizeSocks && pointer_socks % overlapRate == 0)
 								activity = decisionTree(where);	
 						}
+
 						
-						
-						displayData("Counter: "+ activity_counter + " Acvivity_final: "+ activity_final );
-						// Þu anda her aktivitede ekrana basýyo! Hoca isterse sadece Stairs kalcak! BURAYA EKLE!
-						if(!activity.equals(activity_final)){  // new activity is coming
-							
-							activity_final = activity;
-							activity_counter = 1;
-							
-						}
-						
-						else { // old acvivity continues
-							activity_counter++;
-						
-							if(activity_counter == activity_threshold && !shown_activity.equals(activity_final)) {
-								shown_activity = activity_final;
-								// 1. Instantiate an AlertDialog.Builder with its constructor
-								AlertDialog.Builder builder = new AlertDialog.Builder(DeviceServicesActivity.this);
-								boolean check = false;
-								if(activity_final.equals("Standing")) {
-									// 2. Chain together various setter methods to set the dialog characteristics
-									builder.setMessage(R.string.standing_message).setTitle(R.string.dialog_title);
-									check = true;
+
+
+						displayData("Activity : " + activity + " pointer_activity: " + pointer_activity + " activity_final: " + activity_final );
+						int ind = pointer_activity % activity_threshold;
+						window_activity[ind] = activity;
+						pointer_activity++;
+
+						int counter_standing = 0;
+						int counter_walking = 0;
+						int counter_running = 0;
+						int counter_hill = 0;
+						int counter_stairs = 0;
+						int counter = 0;
+						if(pointer_activity >= activity_threshold && pointer_activity % activity_overlap == 0  ) {
+							for(int i = 0 ; i < activity_threshold ; i++) {
+								if(window_activity[i].equals("Standing")) {
+									counter_standing++;
 								}
-								else if(activity_final.equals("Walking")) {
-									// 2. Chain together various setter methods to set the dialog characteristics
-									builder.setMessage(R.string.walking_message).setTitle(R.string.dialog_title);
-									check = true;
+								else if(window_activity[i].equals("Walking")) {
+									counter_walking++;
 								}
-								else if(activity_final.equals("Running")) {
-									// 2. Chain together various setter methods to set the dialog characteristics
-									builder.setMessage(R.string.running_message).setTitle(R.string.dialog_title);
-									check = true;
+								else if(window_activity[i].equals("Running")) {
+									counter_running++;
 								}
-								else if(activity_final.equals("Hill")) {
-									// 2. Chain together various setter methods to set the dialog characteristics
-									builder.setMessage(R.string.hill_message).setTitle(R.string.dialog_title);
-									check = true;
+								else if(window_activity[i].equals("Hill")) {
+									counter_hill++;
 								}
-								else if(activity_final.equals("Stairs")){
-									// 2. Chain together various setter methods to set the dialog characteristics
-									builder.setMessage(R.string.stairs_message).setTitle(R.string.dialog_title);
-									check = true;
+								else if(window_activity[i].equals("Stairs")) {
+									counter_stairs++;
 								}
 								else {
-									check = false;
+									counter++;
 								}
-								//displayData("Acvitity: " + activity_final + " "+ check);
-								if(check){
-									// Add the buttons
-									builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-									           public void onClick(DialogInterface dialog, int id) {
-									               // User clicked OK button
-									        	   //GPS DATAYI ÝÞLE
-									           }
-									       });
-									builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-									           public void onClick(DialogInterface dialog, int id) {
-									               // User cancelled the dialog
-									        	   // YANLIÞ DATA!!!
-									           }
-									       });
-									// 3. Get the AlertDialog from create()
-									AlertDialog dialog = builder.create();
-									dialog.show();
-								}
-								
 							}
-							if(activity_counter > activity_threshold){
-								
-								activity_counter = 1;
-							}
-							
+
+							activity_counter_standing = counter_standing / activity_threshold ;
+							activity_counter_walking = counter_walking / activity_threshold ;
+							activity_counter_running = counter_running / activity_threshold ;
+							activity_counter_hill = counter_hill / activity_threshold ;
+							activity_counter_stairs = counter_stairs / activity_threshold ;
+							activity_counter = counter / activity_threshold ;
 						}
+
+						if(activity_counter_standing >= activity_accuracy){
+							activity_final = "Standing";
+						}
+						if(activity_counter_walking >= activity_accuracy){
+							activity_final = "Walking";
+						}
+						if(activity_counter_running >= activity_accuracy){
+							activity_final = "Running";
+						}
+						if(activity_counter_hill >= activity_accuracy){
+							activity_final = "Hill";
+						}
+						if(activity_counter_stairs >= activity_accuracy){
+							activity_final = "Stairs";
+						}
+						if(activity_counter >= activity_accuracy){
+							activity_final = "";
+						}
+
+						
+						if( !shown_activity.equals(activity_final)) {
+							shown_activity = activity_final;
+							// 1. Instantiate an AlertDialog.Builder with its constructor
+							AlertDialog.Builder builder = new AlertDialog.Builder(DeviceServicesActivity.this);
+							boolean check = false;
+							//								if(activity_final.equals("Standing")) {
+							//									// 2. Chain together various setter methods to set the dialog characteristics
+							//									builder.setMessage(R.string.standing_message).setTitle(R.string.dialog_title);
+							//									check = true;
+							//								}
+							//								else if(activity_final.equals("Walking")) {
+							//									// 2. Chain together various setter methods to set the dialog characteristics
+							//									builder.setMessage(R.string.walking_message).setTitle(R.string.dialog_title);
+							//									check = true;
+							//								}
+							//								else if(activity_final.equals("Running")) {
+							//									// 2. Chain together various setter methods to set the dialog characteristics
+							//									builder.setMessage(R.string.running_message).setTitle(R.string.dialog_title);
+							//									check = true;
+							//								}
+							//								else if(activity_final.equals("Hill")) {
+							//									// 2. Chain together various setter methods to set the dialog characteristics
+							//									builder.setMessage(R.string.hill_message).setTitle(R.string.dialog_title);
+							//									check = true;
+							//								}
+							if(activity_final.equals("Stairs")){
+								// 2. Chain together various setter methods to set the dialog characteristics
+								builder.setMessage(R.string.stairs_message).setTitle(R.string.dialog_title);
+								check = true;
+							}
+							else {
+								check = false;
+							}
 							
+							if(check){
+								// Add the buttons
+								builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog, int id) {
+										// User clicked OK button
+										//GPS DATAYI ÝÞLE
+									}
+								});
+								builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog, int id) {
+										// User cancelled the dialog
+										// YANLIÞ DATA!!!
+									}
+								});
+								// 3. Get the AlertDialog from create()
+								AlertDialog dialog = builder.create();
+								dialog.show();
+							}
+
+						}
+
+
+
 					}
 					//displayData(temp);
 
@@ -487,7 +553,7 @@ public class DeviceServicesActivity extends Activity {
 	private static String decisionTree(String where) {
 		String activity = "No activity";
 		if(where.equals("Head")) {
-			
+
 			double [] xData = new double[windowSizeHead];
 			double [] yData = new double[windowSizeHead];
 			double [] zData = new double[windowSizeHead];
@@ -523,10 +589,10 @@ public class DeviceServicesActivity extends Activity {
 					}
 				}
 			}
-				
+
 		}
 		else if(where.equals("Belt")) {
-			
+
 			double [] xData = new double[windowSizeBelt];
 			double [] yData = new double[windowSizeBelt];
 			double [] zData = new double[windowSizeBelt];
@@ -571,10 +637,10 @@ public class DeviceServicesActivity extends Activity {
 					}
 				}
 			}
-			
+
 		}
 		else{
-			
+
 			double [] xData = new double[windowSizeSocks];
 			double [] yData = new double[windowSizeSocks];
 			double [] zData = new double[windowSizeSocks];
@@ -618,7 +684,7 @@ public class DeviceServicesActivity extends Activity {
 						}
 					}
 				}
-					
+
 			}
 
 		}
@@ -679,7 +745,7 @@ public class DeviceServicesActivity extends Activity {
 	public static double sqr(double x) {
 		return x * x;
 	}
-	
+
 	public static double magnitude (double[] x, double[] y, double[] z ) {
 		int size = x.length;
 		double result = 0;
@@ -688,19 +754,19 @@ public class DeviceServicesActivity extends Activity {
 		}
 		return result;
 	}
-	
-	 public static double ZCR(double[]signals,  double lengthInSecond){
-         int numZC=0;
-         int size=signals.length;
-         
-         for (int i=0; i<size-1; i++){
-                 if((signals[i]>=0 && signals[i+1]<0) || (signals[i]<0 && signals[i+1]>=0)){
-                         numZC++;
-                 }
-         }                       
 
-         return numZC/lengthInSecond;
- }
+	public static double ZCR(double[]signals,  double lengthInSecond){
+		int numZC=0;
+		int size=signals.length;
+
+		for (int i=0; i<size-1; i++){
+			if((signals[i]>=0 && signals[i+1]<0) || (signals[i]<0 && signals[i+1]>=0)){
+				numZC++;
+			}
+		}                       
+
+		return numZC/lengthInSecond;
+	}
 	// If a given GATT characteristic is selected, check for supported features.  This sample
 	// demonstrates 'Read' and 'Notify' features.  See
 	// http://d.android.com/reference/android/bluetooth/BluetoothGatt.html for the complete
@@ -742,6 +808,8 @@ public class DeviceServicesActivity extends Activity {
 
 			startLog.setEnabled(false);
 			stopLog.setEnabled(true);
+			startService(new Intent(getBaseContext(), BackgroundService.class));
+			
 			for(TiSensor<?> sensor : activeSensors){
 				if(sensor != null)
 					bleService.enableSensor(sensor, false);
@@ -780,7 +848,7 @@ public class DeviceServicesActivity extends Activity {
 						}else{
 							gps_data = "No data!" ; 
 						}
-						log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
+						//log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
 					}
 
 
@@ -852,13 +920,16 @@ public class DeviceServicesActivity extends Activity {
 
 		setContentView(R.layout.gatt_services_characteristics); 
 
-		log_data = "";
+		//log_data = "";
 		data = null;
 
 		File sdCard = Environment.getExternalStorageDirectory();
 		dir = new File (sdCard.getAbsolutePath() + "/logs");
 		dir.mkdirs();
-
+		
+		
+        registerReceiver(powerButtonReceiver, powerButtonPressedIntentFilter());
+        
 		gps = new GPSService(this);
 		if(!gps.canGetLocation()){
 			gps.showSettingsAlert();
@@ -869,7 +940,7 @@ public class DeviceServicesActivity extends Activity {
 		deviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
 		userType = intent.getStringExtra(EXTRAS_USER_TYPE);        
 
-		((TextView) findViewById(R.id.device_address)).setText(deviceAddress); //+
+		((TextView) findViewById(R.id.device_address)).setText(deviceAddress); 
 		gattServicesList = (ExpandableListView) findViewById(R.id.gatt_services_list);
 		gattServicesList.setOnChildClickListener(servicesListClickListner);
 		gattServicesList.setVisibility(-1);
@@ -900,11 +971,11 @@ public class DeviceServicesActivity extends Activity {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-
+				stopService(new Intent(getBaseContext(), BackgroundService.class));
 				if(userType.equals("Trainer"))
 					createLog();
 				else {
-					
+
 					// BURAYA EKLE!
 					Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage( getBaseContext().getPackageName() );
 					i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -924,15 +995,19 @@ public class DeviceServicesActivity extends Activity {
 
 		final Intent gattServiceIntent = new Intent(this, BleService.class);
 		bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE);
-		this.getWindow().addFlags(
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-                        | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		PowerManager mgr = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
-		WakeLock wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakeLock"); 
-		wakeLock.acquire();
+//		this.getWindow().addFlags(
+//				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+//				| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+//				| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+//				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+//		PowerManager mgr = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+//		WakeLock wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakeLock"); 
+//		wakeLock.acquire();
 	}
+	
+
+
+	
 	private void createData(ExpandableListView GSL) {
 
 
@@ -976,6 +1051,8 @@ public class DeviceServicesActivity extends Activity {
 
 
 	}
+	
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -1034,7 +1111,7 @@ public class DeviceServicesActivity extends Activity {
 	public void createLog() {
 
 		Intent mIntent = new Intent(this, CreateLogActivity.class);
-		mIntent.putExtra("Log_Data", log_data);
+		//mIntent.putExtra("Log_Data", log_data);		
 		startActivity(mIntent);		
 
 	}
@@ -1076,4 +1153,26 @@ public class DeviceServicesActivity extends Activity {
 		intentFilter.addAction(BleService.ACTION_DATA_AVAILABLE);
 		return intentFilter;
 	}
+	private static IntentFilter powerButtonPressedIntentFilter() {
+		final IntentFilter intentFilter2 = new IntentFilter(Intent.ACTION_SCREEN_ON);		
+        intentFilter2.addAction(Intent.ACTION_SCREEN_OFF);
+        return intentFilter2;
+	}
+	private final BroadcastReceiver powerButtonReceiver = new BroadcastReceiver() {
+		@SuppressLint("DefaultLocale") @Override
+		public void onReceive(Context context, Intent intent) {
+			
+			if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) 
+			{
+				
+				onResume();
+			} 
+			else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) 
+			{
+				onResume();
+			}
+		}
+	};
 }
+
+

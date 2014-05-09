@@ -45,6 +45,7 @@
         <service
             android:name="sample.ble.sensortag.BleService"
             android:enabled="true" />
+        <service android:name="sample.ble.sensortag.BackgroundService" />
     </application>
 
 </manifest>
