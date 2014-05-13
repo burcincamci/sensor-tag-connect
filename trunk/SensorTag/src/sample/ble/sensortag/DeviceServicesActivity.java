@@ -36,6 +36,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.PowerManager.WakeLock;
+import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -43,6 +44,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
@@ -96,9 +98,9 @@ public class DeviceServicesActivity extends Activity {
 
 	private TiSensor<?> activeSensor;
 	private GPSService gps;
-	double latitude ;
-	double longitude ;
-	private Location loc;
+	static double latitude = 0;
+	static double longitude = 0;
+	static Location loc = null;
 	static String tmp_data = "";
 	static String acc_data = "";
 	static String hum_data = "";
@@ -110,12 +112,11 @@ public class DeviceServicesActivity extends Activity {
 	static String activity_final = "";
 	static String activity = "";
 	static String shown_activity = "";
-	static String activity_new = "";
 	private boolean gps_enabled = false;
 	String [] data;
 	ArrayList <Integer> data_index = new ArrayList<Integer>();
 	ArrayList <Integer> active_index = new ArrayList<Integer>();
-//	static String log_data = "";
+	//	static String log_data = "";
 	private LinkedList <TiSensor<?> > activeSensors = new LinkedList<TiSensor<?>>();
 	File dir;
 	File file;
@@ -142,14 +143,11 @@ public class DeviceServicesActivity extends Activity {
 
 	static int pointer_activity = 0;
 
-	static double activity_accuracy = 0.8;
+	static double activity_def_accuracy = 0.8;
+	static double activity_pos_accuracy = 0.6;
 
-	static double activity_counter_standing = 0;
-	static double activity_counter_walking = 0;
-	static double activity_counter_running = 0;
-	static double activity_counter_hill = 0;
-	static double activity_counter_stairs = 0;
-	static double activity_counter = 0;	
+	static double activity_counter [] = new double[6];
+
 
 
 
@@ -378,9 +376,9 @@ public class DeviceServicesActivity extends Activity {
 					displayData(temp);
 				}
 				else {
-
+					
+					
 					String temp_acc_data ;
-
 					if(sensor.equalsIgnoreCase("ACC") ){
 						coordinates = sensor_data.split("\n");
 						for(int i = 0 ; i < 3 ; i++) {
@@ -424,132 +422,137 @@ public class DeviceServicesActivity extends Activity {
 
 						
 
-
 						displayData("Activity : " + activity + " pointer_activity: " + pointer_activity + " activity_final: " + activity_final );
 						int ind = pointer_activity % activity_threshold;
 						window_activity[ind] = activity;
 						pointer_activity++;
+						int counter [] = new int [6];
 
-						int counter_standing = 0;
-						int counter_walking = 0;
-						int counter_running = 0;
-						int counter_hill = 0;
-						int counter_stairs = 0;
-						int counter = 0;
 						if(pointer_activity >= activity_threshold && pointer_activity % activity_overlap == 0  ) {
 							for(int i = 0 ; i < activity_threshold ; i++) {
 								if(window_activity[i].equals("Standing")) {
-									counter_standing++;
+									counter[0] = counter[0] + 1;
 								}
 								else if(window_activity[i].equals("Walking")) {
-									counter_walking++;
+									counter[1] = counter[1] + 1;
 								}
 								else if(window_activity[i].equals("Running")) {
-									counter_running++;
+									counter[2] = counter[2] + 1;
 								}
 								else if(window_activity[i].equals("Hill")) {
-									counter_hill++;
+									counter[3] = counter[3] + 1;
 								}
 								else if(window_activity[i].equals("Stairs")) {
-									counter_stairs++;
+									counter[4] = counter[4] + 1;
 								}
 								else {
-									counter++;
+									counter[5] = counter[5] + 1;
 								}
 							}
+							for(int i = 0; i < 6 ; i++) 
+								activity_counter[i] = counter[i] / activity_threshold ;
 
-							activity_counter_standing = counter_standing / activity_threshold ;
-							activity_counter_walking = counter_walking / activity_threshold ;
-							activity_counter_running = counter_running / activity_threshold ;
-							activity_counter_hill = counter_hill / activity_threshold ;
-							activity_counter_stairs = counter_stairs / activity_threshold ;
-							activity_counter = counter / activity_threshold ;
 						}
-
-						if(activity_counter_standing >= activity_accuracy){
+						// 0 -> standing, 1 -> walking, 2 -> running, 3 -> hill, 4 -> stairs, 5 -> empty
+						int max_index = max_index(activity_counter);
+						if(max_index == 0)
 							activity_final = "Standing";
-						}
-						if(activity_counter_walking >= activity_accuracy){
+						else if (max_index == 1)
 							activity_final = "Walking";
-						}
-						if(activity_counter_running >= activity_accuracy){
+						else if (max_index == 2)
 							activity_final = "Running";
-						}
-						if(activity_counter_hill >= activity_accuracy){
+						else if (max_index == 3) 
 							activity_final = "Hill";
-						}
-						if(activity_counter_stairs >= activity_accuracy){
+						else if (max_index == 4)
 							activity_final = "Stairs";
-						}
-						if(activity_counter >= activity_accuracy){
+						else 
 							activity_final = "";
-						}
-
 						
-						if( !shown_activity.equals(activity_final)) {
-							shown_activity = activity_final;
-							// 1. Instantiate an AlertDialog.Builder with its constructor
-							AlertDialog.Builder builder = new AlertDialog.Builder(DeviceServicesActivity.this);
-							boolean check = false;
-							//								if(activity_final.equals("Standing")) {
-							//									// 2. Chain together various setter methods to set the dialog characteristics
-							//									builder.setMessage(R.string.standing_message).setTitle(R.string.dialog_title);
-							//									check = true;
-							//								}
-							//								else if(activity_final.equals("Walking")) {
-							//									// 2. Chain together various setter methods to set the dialog characteristics
-							//									builder.setMessage(R.string.walking_message).setTitle(R.string.dialog_title);
-							//									check = true;
-							//								}
-							//								else if(activity_final.equals("Running")) {
-							//									// 2. Chain together various setter methods to set the dialog characteristics
-							//									builder.setMessage(R.string.running_message).setTitle(R.string.dialog_title);
-							//									check = true;
-							//								}
-							//								else if(activity_final.equals("Hill")) {
-							//									// 2. Chain together various setter methods to set the dialog characteristics
-							//									builder.setMessage(R.string.hill_message).setTitle(R.string.dialog_title);
-							//									check = true;
-							//								}
-							if(activity_final.equals("Stairs")){
-								// 2. Chain together various setter methods to set the dialog characteristics
-								builder.setMessage(R.string.stairs_message).setTitle(R.string.dialog_title);
-								check = true;
-							}
-							else {
-								check = false;
-							}
+						
+						if(gps.canGetLocation() && gps_enabled){
+							latitude = gps.getLatitude();
+							longitude = gps.getLongitude();						
+							// Location loc can be used if necessary
+							loc = gps.getLocation();
+							gps_data = longitude + "\t" + latitude ; 
+						}
+
+						if(activity_counter[max_index] >= activity_def_accuracy ) {
 							
-							if(check){
-								// Add the buttons
-								builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog, int id) {
-										// User clicked OK button
-										//GPS DATAYI ÝÞLE
-									}
-								});
-								builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
-									public void onClick(DialogInterface dialog, int id) {
-										// User cancelled the dialog
-										// YANLIÞ DATA!!!
-									}
-								});
-								// 3. Get the AlertDialog from create()
-								AlertDialog dialog = builder.create();
-								dialog.show();
+							writeServer(activity_final, longitude, latitude);
+						}
+						else if (activity_counter[max_index] >= activity_pos_accuracy) {
+
+
+							if( !shown_activity.equals(activity_final)) {
+								shown_activity = activity_final;
+								// 1. Instantiate an AlertDialog.Builder with its constructor
+								AlertDialog.Builder builder = new AlertDialog.Builder(DeviceServicesActivity.this);
+								boolean check = false;
+								//								if(activity_final.equals("Standing")) {
+								//									// 2. Chain together various setter methods to set the dialog characteristics
+								//									builder.setMessage(R.string.standing_message).setTitle(R.string.dialog_title);
+								//									check = true;
+								//								}
+								//								else if(activity_final.equals("Walking")) {
+								//									// 2. Chain together various setter methods to set the dialog characteristics
+								//									builder.setMessage(R.string.walking_message).setTitle(R.string.dialog_title);
+								//									check = true;
+								//								}
+								//								else if(activity_final.equals("Running")) {
+								//									// 2. Chain together various setter methods to set the dialog characteristics
+								//									builder.setMessage(R.string.running_message).setTitle(R.string.dialog_title);
+								//									check = true;
+								//								}
+								//								else if(activity_final.equals("Hill")) {
+								//									// 2. Chain together various setter methods to set the dialog characteristics
+								//									builder.setMessage(R.string.hill_message).setTitle(R.string.dialog_title);
+								//									check = true;
+								//								}
+								if(activity_final.equals("Stairs")){
+									// 2. Chain together various setter methods to set the dialog characteristics
+									builder.setMessage(R.string.stairs_message).setTitle(R.string.dialog_title);
+									check = true;
+								}
+								else {
+									check = false;
+								}
+
+								if(check){
+									Vibrator v = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+									// Vibrate for 500 milliseconds
+									v.vibrate(500);
+									// Add the buttons
+									builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+										public void onClick(DialogInterface dialog, int id) {
+											// User clicked OK button
+											writeServer(activity_final, longitude, latitude);
+										}
+									});
+									builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+										public void onClick(DialogInterface dialog, int id) {
+											// User cancelled the dialog
+											// YANLIÞ DATA!!!
+										}
+									});
+									// 3. Get the AlertDialog from create()
+									AlertDialog dialog = builder.create();
+									dialog.show();
+								}
+
 							}
 
 						}
-
-
 
 					}
-					//displayData(temp);
 
 				}
 			}
 		}
 	};
+	private static void writeServer (String activity, double longitude, double latitude) {
+
+	}
 	private static String decisionTree(String where) {
 		String activity = "No activity";
 		if(where.equals("Head")) {
@@ -702,6 +705,15 @@ public class DeviceServicesActivity extends Activity {
 			m = Math.max(m, v[i]);
 		return m;
 	}
+	public static int max_index(double[] v) {
+		int index = 0; 
+		double m = v[0];
+		for (int i = 1; i < v.length; i++) 
+			if(m>v[i])
+				index = i ;
+
+		return index;
+	}
 
 	/**
 	 * Returns the minimum value in the array.
@@ -809,7 +821,7 @@ public class DeviceServicesActivity extends Activity {
 			startLog.setEnabled(false);
 			stopLog.setEnabled(true);
 			startService(new Intent(getBaseContext(), BackgroundService.class));
-			
+
 			for(TiSensor<?> sensor : activeSensors){
 				if(sensor != null)
 					bleService.enableSensor(sensor, false);
@@ -838,16 +850,16 @@ public class DeviceServicesActivity extends Activity {
 					else if(i == size-1){
 
 						gps_enabled = true;
-						if(gps.canGetLocation()){
-
-							latitude = gps.getLatitude();
-							longitude = gps.getLongitude();
-							// Location loc can be used if necessary
-							loc = gps.getLocation();
-							gps_data = longitude + "\t" + latitude ; 
-						}else{
-							gps_data = "No data!" ; 
-						}
+//						if(gps.canGetLocation()){
+//
+//							latitude = gps.getLatitude();
+//							longitude = gps.getLongitude();
+//							// Location loc can be used if necessary
+//							loc = gps.getLocation();
+//							gps_data = longitude + "\t" + latitude ; 
+//						}else{
+//							gps_data = "No data!" ; 
+//						}
 						//log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
 					}
 
@@ -926,10 +938,10 @@ public class DeviceServicesActivity extends Activity {
 		File sdCard = Environment.getExternalStorageDirectory();
 		dir = new File (sdCard.getAbsolutePath() + "/logs");
 		dir.mkdirs();
-		
-		
-        registerReceiver(powerButtonReceiver, powerButtonPressedIntentFilter());
-        
+
+
+		registerReceiver(powerButtonReceiver, powerButtonPressedIntentFilter());
+
 		gps = new GPSService(this);
 		if(!gps.canGetLocation()){
 			gps.showSettingsAlert();
@@ -995,19 +1007,19 @@ public class DeviceServicesActivity extends Activity {
 
 		final Intent gattServiceIntent = new Intent(this, BleService.class);
 		bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE);
-//		this.getWindow().addFlags(
-//				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-//				| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-//				| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-//				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-//		PowerManager mgr = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
-//		WakeLock wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakeLock"); 
-//		wakeLock.acquire();
+		//		this.getWindow().addFlags(
+		//				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
+		//				| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+		//				| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+		//				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+		//		PowerManager mgr = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
+		//		WakeLock wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakeLock"); 
+		//		wakeLock.acquire();
 	}
-	
 
 
-	
+
+
 	private void createData(ExpandableListView GSL) {
 
 
@@ -1051,8 +1063,8 @@ public class DeviceServicesActivity extends Activity {
 
 
 	}
-	
-	
+
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -1081,25 +1093,18 @@ public class DeviceServicesActivity extends Activity {
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.gatt_services, menu);
-		if (isConnected) {
-			menu.findItem(R.id.menu_connect).setVisible(false);
-			menu.findItem(R.id.menu_disconnect).setVisible(true);
-		} else {
-			menu.findItem(R.id.menu_connect).setVisible(true);
-			menu.findItem(R.id.menu_disconnect).setVisible(false);
-		}
-
+	
+			
+		 menu.findItem(R.id.menu_obstacle).setVisible(true);
 		return true;
 	}
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
-		case R.id.menu_connect:
+		case R.id.menu_obstacle:
 			bleService.connect(deviceAddress);
-			return true;
-		case R.id.menu_disconnect:
-			bleService.disconnect();
+			addObstacles();
 			return true;
 		case android.R.id.home:
 			onBackPressed();
@@ -1108,6 +1113,44 @@ public class DeviceServicesActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	public void addObstacles() {
+		AlertDialog.Builder builderSingle = new AlertDialog.Builder(DeviceServicesActivity.this);
+
+		builderSingle.setTitle("Select Obstacle Type:-");
+		final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(DeviceServicesActivity.this,android.R.layout.select_dialog_singlechoice);
+		arrayAdapter.add("Tree");
+		arrayAdapter.add("Hole");
+		arrayAdapter.add("Traffic Sign");
+		arrayAdapter.add("Other");
+		builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+			}
+		});
+
+		builderSingle.setAdapter(arrayAdapter,new DialogInterface.OnClickListener() {
+
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				String obsType = arrayAdapter.getItem(which);
+				
+				if(gps.canGetLocation() && gps_enabled){
+					latitude = gps.getLatitude();
+					longitude = gps.getLongitude();						
+					// Location loc can be used if necessary
+					loc = gps.getLocation();
+					gps_data = longitude + "\t" + latitude ; 
+				
+				}
+				writeServer(obsType, longitude, latitude);
+
+			}
+		});
+		builderSingle.show();
+
+	}
 	public void createLog() {
 
 		Intent mIntent = new Intent(this, CreateLogActivity.class);
@@ -1155,16 +1198,16 @@ public class DeviceServicesActivity extends Activity {
 	}
 	private static IntentFilter powerButtonPressedIntentFilter() {
 		final IntentFilter intentFilter2 = new IntentFilter(Intent.ACTION_SCREEN_ON);		
-        intentFilter2.addAction(Intent.ACTION_SCREEN_OFF);
-        return intentFilter2;
+		intentFilter2.addAction(Intent.ACTION_SCREEN_OFF);
+		return intentFilter2;
 	}
 	private final BroadcastReceiver powerButtonReceiver = new BroadcastReceiver() {
 		@SuppressLint("DefaultLocale") @Override
 		public void onReceive(Context context, Intent intent) {
-			
+
 			if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) 
 			{
-				
+
 				onResume();
 			} 
 			else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) 
@@ -1174,5 +1217,3 @@ public class DeviceServicesActivity extends Activity {
 		}
 	};
 }
-
-
