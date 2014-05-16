@@ -28,12 +28,9 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -84,14 +81,7 @@ public class DeviceScanActivity extends ListActivity {
 			finish();
 			return;
 		}
-//		this.getWindow().addFlags(
-//                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-//                        | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-//                        | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-//                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-//		PowerManager mgr = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
-//		WakeLock wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakeLock"); 
-//		wakeLock.acquire();
+
 	}
 
 	@Override
@@ -174,9 +164,7 @@ public class DeviceScanActivity extends ListActivity {
 
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		//    	final ListView lView = (ListView) findViewById(R.id.ListView01);
-		//    	lView.setAdapter(new ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, items));
-		//    	lView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+
 
 		final BluetoothDevice device = leDeviceListAdapter.getDevice(position);
 		if (device == null)

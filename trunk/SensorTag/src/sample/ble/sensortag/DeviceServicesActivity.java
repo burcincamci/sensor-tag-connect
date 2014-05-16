@@ -34,25 +34,18 @@ import android.media.MediaScannerConnection;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.os.PowerManager;
-import android.os.PowerManager.WakeLock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
-
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -95,7 +88,6 @@ public class DeviceServicesActivity extends Activity {
 	private String userType;
 	private BleService bleService;
 	private boolean isConnected = false;
-
 	private TiSensor<?> activeSensor;
 	private GPSService gps;
 	static double latitude = 0;
@@ -116,11 +108,14 @@ public class DeviceServicesActivity extends Activity {
 	String [] data;
 	ArrayList <Integer> data_index = new ArrayList<Integer>();
 	ArrayList <Integer> active_index = new ArrayList<Integer>();
-	//	static String log_data = "";
 	private LinkedList <TiSensor<?> > activeSensors = new LinkedList<TiSensor<?>>();
 	File dir;
 	File file;
 	FileOutputStream out;
+	
+	File file_obs;
+	FileOutputStream out_obs;
+
 
 
 	final static int windowSizeHead = 20;
@@ -217,7 +212,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_tmp_data.equals(tmp_data)) {
 						tmp_data = temp_tmp_data;	
-						//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + tmp_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + tmp_data + "\n").getBytes());
 							out.flush();
@@ -240,7 +234,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_acc_data.equals(acc_data)) {
 						acc_data = temp_acc_data;	
-						//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + acc_data + "\n").getBytes());
 							out.flush();
@@ -259,7 +252,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_hum_data.equals(hum_data)) {
 						hum_data = temp_hum_data;	
-						//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + hum_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + hum_data + "\n").getBytes());
 							out.flush();
@@ -281,7 +273,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_mag_data.equals(mag_data)) {
 						mag_data = temp_mag_data;	
-						//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + mag_data + "\n").getBytes());
 							out.flush();
@@ -299,7 +290,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_prs_data.equals(prs_data)) {
 						prs_data = temp_prs_data;	
-						//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + prs_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + prs_data + "\n").getBytes());
 							out.flush();
@@ -321,7 +311,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_gyr_data.equals(gyr_data)) {
 						gyr_data = temp_gyr_data;	
-						//log_data += System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + gyr_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + sensor.toUpperCase() + "\t" + gyr_data + "\n").getBytes());
 							out.flush();
@@ -341,7 +330,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_key_data.equals(key_data)) {
 						key_data = temp_key_data;	
-						//log_data += System.currentTimeMillis() + "\t" + "KEY" + "\t" + key_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + "KEY" + "\t" + key_data + "\n").getBytes());
 							out.flush();
@@ -365,7 +353,6 @@ public class DeviceServicesActivity extends Activity {
 					}
 					if(!temp_gps_data.equals(gps_data)) {
 						gps_data = temp_gps_data;	
-						//log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
 						try {
 							out.write((System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n").getBytes());
 							out.flush();
@@ -843,26 +830,13 @@ public class DeviceServicesActivity extends Activity {
 			for (int i = 0; i < size; i++) {
 				buffer = settings.getString(String.valueOf((int)i),"false");
 				if(buffer.equals("true"))
-					if(i != size-1){
+					if(i != size-1){ // except GPS
 						int index = data_index.get(i);
 						active_index.add(index);
 					}
-					else if(i == size-1){
-
+					else if(i == size-1){ // for GPS
 						gps_enabled = true;
-//						if(gps.canGetLocation()){
-//
-//							latitude = gps.getLatitude();
-//							longitude = gps.getLongitude();
-//							// Location loc can be used if necessary
-//							loc = gps.getLocation();
-//							gps_data = longitude + "\t" + latitude ; 
-//						}else{
-//							gps_data = "No data!" ; 
-//						}
-						//log_data += System.currentTimeMillis() + "\t" + "GPS" + "\t" + gps_data + "\n";
 					}
-
 
 			}
 			if(active_index.isEmpty())
@@ -932,7 +906,6 @@ public class DeviceServicesActivity extends Activity {
 
 		setContentView(R.layout.gatt_services_characteristics); 
 
-		//log_data = "";
 		data = null;
 
 		File sdCard = Environment.getExternalStorageDirectory();
@@ -983,12 +956,16 @@ public class DeviceServicesActivity extends Activity {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
+				try {
+					out_obs.close();
+					MediaScannerConnection.scanFile(DeviceServicesActivity.this, new String[] {file_obs.getAbsolutePath()} , null, null); //to refresh file cache
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				stopService(new Intent(getBaseContext(), BackgroundService.class));
 				if(userType.equals("Trainer"))
 					createLog();
 				else {
-
-					// BURAYA EKLE!
 					Intent i = getBaseContext().getPackageManager().getLaunchIntentForPackage( getBaseContext().getPackageName() );
 					i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 					startActivity(i);
@@ -1007,14 +984,7 @@ public class DeviceServicesActivity extends Activity {
 
 		final Intent gattServiceIntent = new Intent(this, BleService.class);
 		bindService(gattServiceIntent, serviceConnection, BIND_AUTO_CREATE);
-		//		this.getWindow().addFlags(
-		//				WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD
-		//				| WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-		//				| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-		//				| WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		//		PowerManager mgr = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
-		//		WakeLock wakeLock = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"MyWakeLock"); 
-		//		wakeLock.acquire();
+
 	}
 
 
@@ -1080,6 +1050,7 @@ public class DeviceServicesActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		unregisterReceiver(gattUpdateReceiver);
+	
 	}
 
 	@Override
@@ -1104,6 +1075,13 @@ public class DeviceServicesActivity extends Activity {
 		switch(item.getItemId()) {
 		case R.id.menu_obstacle:
 			bleService.connect(deviceAddress);
+			file_obs = new File(dir, "Obstacles.txt");
+			if (file_obs.exists ()) file_obs.delete ();
+			try {
+				out_obs = new FileOutputStream(file_obs);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			addObstacles();
 			return true;
 		case android.R.id.home:
@@ -1114,10 +1092,13 @@ public class DeviceServicesActivity extends Activity {
 	}
 
 	public void addObstacles() {
+		
+		
 		AlertDialog.Builder builderSingle = new AlertDialog.Builder(DeviceServicesActivity.this);
 
 		builderSingle.setTitle("Select Obstacle Type:-");
 		final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(DeviceServicesActivity.this,android.R.layout.select_dialog_singlechoice);
+		arrayAdapter.add("Stairs");
 		arrayAdapter.add("Tree");
 		arrayAdapter.add("Hole");
 		arrayAdapter.add("Traffic Sign");
@@ -1144,6 +1125,14 @@ public class DeviceServicesActivity extends Activity {
 					gps_data = longitude + "\t" + latitude ; 
 				
 				}
+				try {
+					out_obs.write((obsType.toUpperCase() + "\t" + longitude + "\t" + latitude + "\n").getBytes());
+					out_obs.flush();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
 				writeServer(obsType, longitude, latitude);
 
 			}
@@ -1153,8 +1142,7 @@ public class DeviceServicesActivity extends Activity {
 	}
 	public void createLog() {
 
-		Intent mIntent = new Intent(this, CreateLogActivity.class);
-		//mIntent.putExtra("Log_Data", log_data);		
+		Intent mIntent = new Intent(this, CreateLogActivity.class);		
 		startActivity(mIntent);		
 
 	}
