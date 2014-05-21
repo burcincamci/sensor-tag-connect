@@ -30,6 +30,8 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.media.MediaScannerConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,6 +39,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -68,6 +71,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
+
 import sample.ble.sensortag.adapters.TiServicesAdapter;
 import sample.ble.sensortag.info.TiInfoService;
 import sample.ble.sensortag.info.TiInfoServices;
@@ -81,7 +85,7 @@ import sample.ble.sensortag.sensor.TiSensors;
  * communicates with {@code BleService}, which in turn interacts with the
  * Bluetooth LE API.
  */
-public class DeviceServicesActivity extends Activity {
+public class DeviceServicesActivity extends Activity implements LocationListener {
 	private final static String TAG = DeviceServicesActivity.class.getSimpleName();
 
 	public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
@@ -104,10 +108,7 @@ public class DeviceServicesActivity extends Activity {
 	private BleService bleService;
 	private boolean isConnected = false;
 	private TiSensor<?> activeSensor;
-	private GPSService gps;
-	static double latitude = 0;
-	static double longitude = 0;
-	static Location loc = null;
+
 	static String tmp_data = "";
 	static String acc_data = "";
 	static String hum_data = "";
@@ -119,7 +120,7 @@ public class DeviceServicesActivity extends Activity {
 	static String activity_final = "";
 	static String activity = "";
 	static String shown_activity = "";
-	private boolean gps_enabled = false;
+	
 	String [] data;
 	ArrayList <Integer> data_index = new ArrayList<Integer>();
 	ArrayList <Integer> active_index = new ArrayList<Integer>();
@@ -158,9 +159,17 @@ public class DeviceServicesActivity extends Activity {
 
 	static double activity_counter [] = new double[6];
 
+	private boolean gps_selected = false;
 
-
-
+	private boolean canGetLocation = false;
+	private LocationManager locationManager;
+	private static double latitude = 0;
+	private static double longitude = 0;
+	private static Location loc = null;
+	private boolean isNetworkEnabled = false;
+	private boolean gpsEnabled = false;
+	private static final long MINIMUM_UPDATE_TIME = 0;
+	private static final float MINIMUM_UPDATE_DISTANCE = 0.0f;
 
 	// Code to manage Service lifecycle.
 	private final ServiceConnection serviceConnection = new ServiceConnection() {
@@ -355,12 +364,14 @@ public class DeviceServicesActivity extends Activity {
 
 					// GPS Data Parsing
 					String temp_gps_data ;
-					if(gps.canGetLocation() && gps_enabled){
-
-						latitude = gps.getLatitude();
-						longitude = gps.getLongitude();
-						// Location loc can be used if necessary
-						loc = gps.getLocation();
+					if(canGetLocation && gps_selected){
+						Location firstLoc = getFirstLocation();
+						double firstLong = firstLoc.getLongitude();
+						double firstLat = firstLoc.getLatitude();
+						loc = firstLoc;
+						longitude = firstLong;
+						latitude = firstLat;
+						
 						temp_gps_data = longitude + "\t" + latitude ; 
 
 					}else{
@@ -471,11 +482,13 @@ public class DeviceServicesActivity extends Activity {
 							activity_final = "";
 						
 						
-						if(gps.canGetLocation() && gps_enabled){
-							latitude = gps.getLatitude();
-							longitude = gps.getLongitude();						
-							// Location loc can be used if necessary
-							loc = gps.getLocation();
+						if(canGetLocation && gps_selected){
+							Location firstLoc = getFirstLocation();
+							double firstLong = firstLoc.getLongitude();
+							double firstLat = firstLoc.getLatitude();
+							loc = firstLoc;
+							longitude = firstLong;
+							latitude = firstLat;
 							gps_data = longitude + "\t" + latitude ; 
 						}
 
@@ -928,7 +941,7 @@ public class DeviceServicesActivity extends Activity {
 						active_index.add(index);
 					}
 					else if(i == size-1){ // for GPS
-						gps_enabled = true;
+						gps_selected = true;
 					}
 
 			}
@@ -1008,10 +1021,10 @@ public class DeviceServicesActivity extends Activity {
 
 		registerReceiver(powerButtonReceiver, powerButtonPressedIntentFilter());
 
-		gps = new GPSService(this);
-		if(!gps.canGetLocation()){
-			gps.showSettingsAlert();
-		}   
+	
+		getFirstLocation();
+		if(!canGetLocation)
+			showSettingsAlert(); 
 
 		final Intent intent = getIntent();
 		deviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -1156,7 +1169,7 @@ public class DeviceServicesActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		gps.stopUsingGPS();
+		stopUsingGPS();
 		unbindService(serviceConnection);
 		bleService = null;
 	}
@@ -1210,11 +1223,13 @@ public class DeviceServicesActivity extends Activity {
 			public void onClick(DialogInterface dialog, int which) {
 				String obsType = arrayAdapter.getItem(which);
 				
-				if(gps.canGetLocation() && gps_enabled){
-					latitude = gps.getLatitude();
-					longitude = gps.getLongitude();						
-					// Location loc can be used if necessary
-					loc = gps.getLocation();
+				if(canGetLocation){
+					Location firstLoc = getFirstLocation();
+					double firstLong = firstLoc.getLongitude();
+					double firstLat = firstLoc.getLatitude();
+					loc = firstLoc;
+					longitude = firstLong;
+					latitude = firstLat;
 					gps_data = longitude + "\t" + latitude ; 
 				
 				}
@@ -1297,4 +1312,106 @@ public class DeviceServicesActivity extends Activity {
 			}
 		}
 	};
+	public void stopUsingGPS(){
+		if(locationManager != null){
+			locationManager.removeUpdates(DeviceServicesActivity.this);
+			locationManager = null;		
+		}       
+	}
+
+	public void showSettingsAlert(){
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+		// Setting Dialog Title
+		alertDialog.setTitle("GPS is settings");
+
+		// Setting Dialog Message
+		alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
+
+
+		// On pressing Settings button
+		alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog,int which) {
+				Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+				startActivity(intent);
+			}
+		});
+
+		// on pressing cancel button
+		alertDialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+
+		// Showing Alert Message
+		alertDialog.show();
+	}
+	@Override
+	public void onLocationChanged(Location location) {
+		loc = location;
+		latitude = location.getLatitude();
+		longitude = location.getLongitude();
+	}
+
+	@Override
+	public void onProviderDisabled(String provider) {
+	}
+
+	@Override
+	public void onProviderEnabled(String provider) {
+	}
+
+	@Override
+	public void onStatusChanged(String provider, int status, Bundle extras) {
+	}
+
+	public Location getFirstLocation() {
+		try {
+			locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
+
+			// getting GPS status
+			gpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+			// getting network status
+			isNetworkEnabled = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+			if (!gpsEnabled && !isNetworkEnabled) {
+				// no network provider is enabled
+			} else {
+				canGetLocation = true;
+				// First get location from Network Provider
+				if (isNetworkEnabled) {
+					locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,MINIMUM_UPDATE_TIME,MINIMUM_UPDATE_DISTANCE, this);
+					Log.d("Network", "Network");
+					if (locationManager != null) {
+						loc = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+						if (loc != null) {
+							latitude = loc.getLatitude();
+							longitude = loc.getLongitude();
+						}
+					}
+				}
+				// if GPS Enabled get lat/long using GPS Services
+				if (gpsEnabled) {
+					if (loc == null) {
+						locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,MINIMUM_UPDATE_TIME, MINIMUM_UPDATE_DISTANCE, this);
+						Log.d("GPS Enabled", "GPS Enabled");
+						if (locationManager != null) {
+							loc = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+							if (loc != null) {
+								latitude = loc.getLatitude();
+								longitude = loc.getLongitude();
+							}
+						}
+					}
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		return loc;
+	}
 }
