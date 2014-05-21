@@ -31,6 +31,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.media.MediaScannerConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -46,12 +47,26 @@ import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import sample.ble.sensortag.adapters.TiServicesAdapter;
 import sample.ble.sensortag.info.TiInfoService;
@@ -537,9 +552,87 @@ public class DeviceServicesActivity extends Activity {
 			}
 		}
 	};
-	private static void writeServer (String activity, double longitude, double latitude) {
+	
+	@SuppressLint("DefaultLocale")
+	private void writeServer (String activity, double longitude, double latitude) {
+		Log.i("writeServer", "girdi");
+		activity = activity.toLowerCase();
+		new MyAsyncTask().execute(Double.toString(longitude),
+									Double.toString(latitude),
+										activity);
+		
+	}
+	
+	private StringBuilder inputStreamToString(InputStream is) {
+        String line = "";
+        StringBuilder total = new StringBuilder();
+        // Wrap a BufferedReader around the InputStream
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        // Read response until the end
+        try {
+                while ((line = rd.readLine()) != null) { 
+                        total.append(line); 
+                }
+        } catch (IOException e) {
+                e.printStackTrace();
+        }
+        // Return full string
+        return total;
+	}
+	
+	public class MyAsyncTask extends AsyncTask<String, Integer, String> {
+
+		@Override
+		protected String doInBackground(String... params) {
+			String longitude = params[0];
+			String latitude = params[1];
+			String type = params[2];
+			HttpClient httpclient = new DefaultHttpClient();
+			HttpPost httppost = new HttpPost(
+					"http://79.123.176.109:8080/ObstacleAlert/AddObstacle");
+			String result = "";
+			try {
+				// Add your data
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+				nameValuePairs.add(new BasicNameValuePair("longitude",
+						longitude));
+				nameValuePairs
+						.add(new BasicNameValuePair("latitude", latitude));
+				nameValuePairs.add(new BasicNameValuePair("type", type));
+				httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				System.out.println("result:" + 213);
+
+				// Execute HTTP Post Request
+				HttpResponse response = httpclient.execute(httppost);
+				result = inputStreamToString(response.getEntity().getContent())
+						.toString();
+				System.out.println("result:"
+						+ response.getStatusLine().getStatusCode());
+
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return result;
+		}
+
+		protected void onPostExecute(String result) {
+
+			if (result.toString().equalsIgnoreCase("true")) {
+				Toast.makeText(getApplicationContext(), "command  sent",
+						Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getApplicationContext(), "command couldn't send",
+						Toast.LENGTH_LONG).show();
+			}
+		}
+
 
 	}
+	
+	
+	
 	private static String decisionTree(String where) {
 		String activity = "No activity";
 		if(where.equals("Head")) {
