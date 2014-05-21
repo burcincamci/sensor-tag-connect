@@ -823,7 +823,7 @@ public class DeviceServicesActivity extends Activity {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-
+			
 			SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);  
 			String buffer = null; 		    
 			int size = data.length;
@@ -933,6 +933,13 @@ public class DeviceServicesActivity extends Activity {
 
 
 		expandableListView = (ExpandableListView)findViewById(R.id.expandableListView1);
+		file_obs = new File(dir, "Obstacles.txt");
+		if (file_obs.exists ()) file_obs.delete ();
+		try {
+			out_obs = new FileOutputStream(file_obs);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 
 		startLog = (Button) findViewById(R.id.log_start);
@@ -1075,13 +1082,6 @@ public class DeviceServicesActivity extends Activity {
 		switch(item.getItemId()) {
 		case R.id.menu_obstacle:
 			bleService.connect(deviceAddress);
-			file_obs = new File(dir, "Obstacles.txt");
-			if (file_obs.exists ()) file_obs.delete ();
-			try {
-				out_obs = new FileOutputStream(file_obs);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
 			addObstacles();
 			return true;
 		case android.R.id.home:
@@ -1126,7 +1126,7 @@ public class DeviceServicesActivity extends Activity {
 				
 				}
 				try {
-					out_obs.write((obsType.toUpperCase() + "\t" + longitude + "\t" + latitude + "\n").getBytes());
+					out_obs.write((obsType + "\t" + longitude + "\t" + latitude + "\n").getBytes());
 					out_obs.flush();
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
