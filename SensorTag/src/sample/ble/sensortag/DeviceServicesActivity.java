@@ -594,7 +594,9 @@ public class DeviceServicesActivity extends Activity implements LocationListener
 	}
 	
 	public class MyAsyncTask extends AsyncTask<String, Integer, String> {
-
+		
+		int status = 0;
+		
 		@Override
 		protected String doInBackground(String... params) {
 			String longitude = params[0];
@@ -602,7 +604,7 @@ public class DeviceServicesActivity extends Activity implements LocationListener
 			String type = params[2];
 			HttpClient httpclient = new DefaultHttpClient();
 			HttpPost httppost = new HttpPost(
-					"http://79.123.176.109:8080/ObstacleAlert/AddObstacle");
+					"http://79.123.176.62:8080/ObstacleAlert/AddObstacle");
 			String result = "";
 			try {
 				// Add your data
@@ -622,6 +624,7 @@ public class DeviceServicesActivity extends Activity implements LocationListener
 				System.out.println("result:"
 						+ response.getStatusLine().getStatusCode());
 
+				status = response.getStatusLine().getStatusCode();
 			} catch (ClientProtocolException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
@@ -636,8 +639,13 @@ public class DeviceServicesActivity extends Activity implements LocationListener
 				Toast.makeText(getApplicationContext(), "command  sent",
 						Toast.LENGTH_LONG).show();
 			} else {
-				Toast.makeText(getApplicationContext(), "command couldn't send",
+				if(status == 200){
+					Toast.makeText(getApplicationContext(), "obstacle already exists",
+							Toast.LENGTH_LONG).show();
+				}else{
+					Toast.makeText(getApplicationContext(), "command couldn't send",
 						Toast.LENGTH_LONG).show();
+				}
 			}
 		}
 
@@ -1207,7 +1215,7 @@ public class DeviceServicesActivity extends Activity implements LocationListener
 		arrayAdapter.add("Stairs");
 		arrayAdapter.add("Tree");
 		arrayAdapter.add("Hole");
-		arrayAdapter.add("Traffic Sign");
+		arrayAdapter.add("Sign");
 		arrayAdapter.add("Other");
 		builderSingle.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
 

@@ -12,7 +12,7 @@
      distributed under the License is distributed on an "AS IS" BASIS,
      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
      See the License for the specific language governing permissions and
-     limitations under the License.
+     limitations under the License.
 -->
 <resources>
 
@@ -41,16 +41,14 @@
     <string name="stop_button">Stop</string>
     <string name="save_button">Save</string>
     <string name="ready_button">Ready</string>
-    
     <string name="dialog_title">Activity Type</string>
     <string name="standing_message">Are you STANDING?</string>
-	<string name="walking_message">Are you WALKING?</string>
-	<string name="running_message">Are you RUNNING?</string>
-	<string name="hill_message">Are you moving on HILL?</string>
-	<string name="stairs_message">Are you moving on STAIRS?</string>
-	<string name="yes">Yes</string>
-	<string name="no">No</string>
-	
+    <string name="walking_message">Are you WALKING?</string>
+    <string name="running_message">Are you RUNNING?</string>
+    <string name="hill_message">Are you moving on HILL?</string>
+    <string name="stairs_message">Are you moving on STAIRS?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_expandablelist">ExpandablelistActivity</string>
@@ -74,6 +72,10 @@
     <string name="menu_obstacle">Add Obstacle</string>
     <string name="menu_scan">Scan</string>
     <string name="menu_stop">Stop</string>
-    
+    <string name="title_activity_main">MainActivity</string>
+    <string name="action_settings">Settings</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
 
 </resources>
