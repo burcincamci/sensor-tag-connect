@@ -1,15 +1,32 @@
 package cmpe.obstaclealert;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.concurrent.ExecutionException;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+
+import com.google.gson.Gson;
+
 import cmpe.obstaclealert.BackgroundService;
+import cmpe.obstaclealert.model.Obstacle;
+import cmpe.obstaclealert.model.ObstacleHolder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.media.MediaScannerConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Vibrator;
 import android.provider.Settings;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -22,23 +39,23 @@ import android.content.IntentFilter;
 import android.util.Log;
 import android.view.Menu;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class StartSystem extends Activity implements LocationListener{
 
+	public ObstacleHolder obstacles;
+	public Obstacle[] allObstacles;
 
 	private int i = 0;
 	private TextView latitudeText;
 	private TextView longitudeText;
-	private TextView directionText;
-	private TextView UzunText;
 	private TextView otherText;
 
 	File dir;
 	File file;
 	FileOutputStream out;
 
-	private boolean canGetLocationNetwork = false;
-	private boolean canGetLocationGPS = false;
+	private boolean canGetLocation = false;
 	private LocationManager locationManager;
 	private static double latitude = 0;
 	private static double longitude = 0;
@@ -47,13 +64,6 @@ public class StartSystem extends Activity implements LocationListener{
 	private boolean gpsEnabled = false;
 	private static final long MINIMUM_UPDATE_TIME = 0;
 	private static final float MINIMUM_UPDATE_DISTANCE = 0.0f;
-	
-	private static double fromLatitude = 0.0;
-	private static double toLatitude = 0.0;
-	private static double fromLongitude = 0.0;
-	private static double toLongitude = 0.0;
-	private static Location fromLocation = null;
-	private static Location toLocation = null;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,8 +73,6 @@ public class StartSystem extends Activity implements LocationListener{
 
 		latitudeText = (TextView) findViewById(R.id.latitudeText);
 		longitudeText = (TextView) findViewById(R.id.longitudeText);
-		directionText = (TextView) findViewById(R.id.directionText);
-		UzunText = (TextView) findViewById(R.id.UzunText);
 		otherText = (TextView) findViewById(R.id.otherText);
 
 		registerReceiver(powerButtonReceiver, powerButtonPressedIntentFilter());
@@ -80,28 +88,18 @@ public class StartSystem extends Activity implements LocationListener{
 		}
 
 		getFirstLocation();
-		if(!canGetLocationGPS)
-			showSettingsAlertGPS();
-		if(!canGetLocationNetwork)
-			showSettingsAlertNetwork();
-		
-		if(canGetLocationGPS || canGetLocationNetwork) {
+		if(!canGetLocation)
+			showSettingsAlert();
+		if(canGetLocation) {
 			Location firstLoc = getFirstLocation();
 			double firstLong = firstLoc.getLongitude();
 			double firstLat = firstLoc.getLatitude();
 			loc = firstLoc;
 			longitude = firstLong;
 			latitude = firstLat;
-			fromLocation = loc ;
-			fromLongitude = longitude;
-			fromLatitude = latitude;
-			toLocation = loc ;
-			toLongitude = longitude;
-			toLatitude = latitude;
-			double degree = toLocation.bearingTo(fromLocation);
-		//	double uzun = getDegrees(fromLatitude, fromLongitude, toLatitude, toLongitude, headX);
-		//	updateView(String.valueOf(toLatitude), String.valueOf(toLongitude), String.valueOf(degree), String.valueOf(Uzun));
-			updateView(String.valueOf(toLatitude), String.valueOf(toLongitude), String.valueOf(degree));
+					
+			updateView(String.valueOf(latitude), String.valueOf(longitude));
+			getObstacles(longitude, latitude);
 		}
 
 	}
@@ -137,10 +135,10 @@ public class StartSystem extends Activity implements LocationListener{
 
 	}
 
-	private void updateView(String latitude, String longitude, String degree){
+	private void updateView(String latitude, String longitude){
 		i++;
 		try {
-			out.write((longitude + "\t" + latitude + "\t" + degree +  "\n").getBytes());
+			out.write((longitude + "\t" + latitude +  "\n").getBytes());
 			out.flush();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -148,7 +146,6 @@ public class StartSystem extends Activity implements LocationListener{
 		// update all data in the UI
 		latitudeText.setText(latitude);
 		longitudeText.setText(longitude);
-		directionText.setText(degree);
 		otherText.setText(i+"");
 	}
 	private static IntentFilter powerButtonPressedIntentFilter() {
@@ -178,36 +175,12 @@ public class StartSystem extends Activity implements LocationListener{
 			locationManager = null;		
 		}       
 	}
-	public void showSettingsAlertNetwork() 
-	{
 
-	    AlertDialog.Builder builder = new AlertDialog.Builder(this);
-	    builder.setTitle("Network Setting");
-	    builder.setMessage("Internet is not enabled. Do you want to go to settings menu?");
-	    builder.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
-	        public void onClick(DialogInterface dialog, int which) 
-	        {
-	        	getFirstLocation();
-	        	Intent intent = new Intent(Settings.ACTION_SETTINGS);
-				startActivity(intent);
-	        }
-	    });
-
-	    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() 
-	    {
-	        public void onClick(DialogInterface dialog, int which) 
-	        {
-	        	dialog.cancel();
-	        }
-	    });
-	    builder.show();
-	}
-	public void showSettingsAlertGPS(){
-
+	public void showSettingsAlert(){
 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
 		// Setting Dialog Title
-		alertDialog.setTitle("GPS Settings");
+		alertDialog.setTitle("GPS is settings");
 
 		// Setting Dialog Message
 		alertDialog.setMessage("GPS is not enabled. Do you want to go to settings menu?");
@@ -216,7 +189,6 @@ public class StartSystem extends Activity implements LocationListener{
 		// On pressing Settings button
 		alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog,int which) {
-				getFirstLocation();
 				Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
 				startActivity(intent);
 			}
@@ -237,59 +209,102 @@ public class StartSystem extends Activity implements LocationListener{
 		loc = location;
 		latitude = location.getLatitude();
 		longitude = location.getLongitude();
-		fromLocation = toLocation ;
-		fromLongitude = toLongitude;
-		fromLatitude = toLatitude;
-		toLocation = loc ;
-		toLongitude = longitude;
-		toLatitude = latitude;
-		double degree = toLocation.bearingTo(fromLocation);
-//		double uzun = getDegrees(fromLatitude, fromLongitude, toLatitude, toLongitude, headX);
-//		updateView(String.valueOf(toLatitude), String.valueOf(toLongitude), String.valueOf(degree), String.valueOf(Uzun));
-		updateView(String.valueOf(toLatitude), String.valueOf(toLongitude), String.valueOf(degree));
+		updateView(String.valueOf(latitude), String.valueOf(longitude));
+		getObstacles(longitude, latitude);
 	}
-	/**
-	 * Params: lat1, long1 => Latitude and Longitude of current point
-	 *         lat2, long2 => Latitude and Longitude of target  point
-	 *         
-	 *         headX       => x-Value of built-in phone-compass
-	 * 
-	 * Returns the degree of a direction from current point to target point
-	 *
-	 */
-	public double getDegrees(double fromLat, double fromLong, double toLat, double toLong, double headX) {
+
+	private void getObstacles (double longitude, double latitude) {
+		Log.i("loginAttempt", "girdi");
+		MyAsyncTask task = new MyAsyncTask();
+		task.execute(Double.toString(longitude), Double.toString(latitude));
+		try {
+            String result = task.get();
+            Gson gson = new Gson();
+			obstacles = gson.fromJson(result, ObstacleHolder.class);
+			allObstacles = obstacles.getObstacles();
+			int obsCount = allObstacles.length;
+			Log.i("obstacle count", "" + obsCount);
+			Toast.makeText(getApplicationContext(), "obstacle count: " + obsCount,
+					Toast.LENGTH_LONG).show();
+			if(obsCount>0){
+				Vibrator v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+				v.vibrate(500);
+			}
+				
+            
+		} catch (InterruptedException e) {
+            e.printStackTrace();
+		} catch (ExecutionException e) {
+            e.printStackTrace();
+		}
+	}
 	
-		double dLat = Math.toRadians(toLat-fromLat);
-		double dLong = Math.toRadians(toLong-fromLong);
-
-	    fromLat = Math.toRadians(fromLat);
-	    toLat = Math.toRadians(toLat);
-
-	    double y = Math.sin(dLong) * Math.cos(toLat);
-	    double x = Math.cos(fromLat)*Math.sin(toLat) -
-	            Math.sin(fromLat)*Math.cos(toLat)*Math.cos(dLong);
-	    double brng = Math.toDegrees(Math.atan2(y, x));
-
-	    // fix negative degrees
-	    if(brng<0) {
-	        brng=360-Math.abs(brng);
-	    }
-
-	    return brng - headX;
+	private StringBuilder inputStreamToString(InputStream is) {
+        String line = "";
+        StringBuilder total = new StringBuilder();
+        // Wrap a BufferedReader around the InputStream
+        BufferedReader rd = new BufferedReader(new InputStreamReader(is));
+        // Read response until the end
+        try {
+                while ((line = rd.readLine()) != null) { 
+                        total.append(line); 
+                }
+        } catch (IOException e) {
+                e.printStackTrace();
+        }
+        // Return full string
+        return total;
 	}
-//	public static double distFrom(double lat1, double lng1, double lat2, double lng2) {
-//	    double earthRadius = 3958.75;
-//	    double dLat = Math.toRadians(lat2-lat1);
-//	    double dLng = Math.toRadians(lng2-lng1);
-//	    double sindLat = Math.sin(dLat / 2);
-//	    double sindLng = Math.sin(dLng / 2);
-//	    double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
-//	            * Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2));
-//	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-//	    double dist = earthRadius * c;
-//
-//	    return dist;
-//	    }
+	
+	public class MyAsyncTask extends AsyncTask<String, String, String> {
+		
+		int status = 0;
+		
+		@Override
+		protected String doInBackground(String... params) {
+			String mLongitude = params[0];
+			String mLatitude = params[1];
+			HttpClient httpclient = new DefaultHttpClient();
+			//HttpPost httppost = new HttpPost("http://79.123.176.62:8080/ObstacleAlert/GetObstaclesByLocation/" + mLongitude + "/" + mLatitude);
+			HttpPost httppost = new HttpPost("http://192.168.1.126:8080/ObstacleAlert/GetObstaclesByLocation/" + mLongitude + "/" + mLatitude);
+			String result = "";
+			try {
+				// Add your data
+				System.out.println("result:" + 213);
+
+				// Execute HTTP Post Request
+				HttpResponse response = httpclient.execute(httppost);
+				result = inputStreamToString(response.getEntity().getContent())
+						.toString();
+				System.out.println("result:"
+						+ response.getStatusLine().getStatusCode());
+
+				status = response.getStatusLine().getStatusCode();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			System.out.println("obstacles: "	+ result);
+			
+			return result;
+		}
+
+		protected void onPostExecute(String result) {
+
+			if (status == 200) {
+//				Toast.makeText(getApplicationContext(), "command sent",
+//						Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getApplicationContext(), "command could not sent",
+						Toast.LENGTH_LONG).show();
+			}
+		}
+
+
+	}
+
 	@Override
 	public void onProviderDisabled(String provider) {
 	}
@@ -301,7 +316,7 @@ public class StartSystem extends Activity implements LocationListener{
 	@Override
 	public void onStatusChanged(String provider, int status, Bundle extras) {
 	}
-	
+
 	public Location getFirstLocation() {
 		try {
 			locationManager = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
@@ -314,13 +329,8 @@ public class StartSystem extends Activity implements LocationListener{
 
 			if (!gpsEnabled && !isNetworkEnabled) {
 				// no network provider is enabled
-			}else if (!gpsEnabled && isNetworkEnabled) 
-				canGetLocationNetwork = true;
-			else if (gpsEnabled && !isNetworkEnabled)
-				canGetLocationGPS = true;
-			else {
-				canGetLocationNetwork = true;
-				canGetLocationGPS = true;
+			} else {
+				canGetLocation = true;
 				// First get location from Network Provider
 				if (isNetworkEnabled) {
 					locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,MINIMUM_UPDATE_TIME,MINIMUM_UPDATE_DISTANCE, this);
