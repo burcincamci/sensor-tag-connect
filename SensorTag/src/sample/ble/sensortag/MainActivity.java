@@ -64,7 +64,6 @@ public class MainActivity extends Activity {
 		
 	}
 	
-	@SuppressLint("DefaultLocale")
 	private void loginAttempt (String username, String password) {
 		Log.i("loginAttempt", "girdi");
 		new MyAsyncTask().execute(username, password);
@@ -97,8 +96,8 @@ public class MainActivity extends Activity {
 			String username = params[0];
 			String password = params[1];
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpPost httppost = new HttpPost(
-					"http://79.123.176.62:8080/ObstacleAlert/CheckUser");
+			//HttpPost httppost = new HttpPost("http://79.123.176.62:8080/ObstacleAlert/CheckUser");
+			HttpPost httppost = new HttpPost("http://192.168.1.126:8080/ObstacleAlert/CheckUser");
 			String result = "";
 			try {
 				// Add your data
