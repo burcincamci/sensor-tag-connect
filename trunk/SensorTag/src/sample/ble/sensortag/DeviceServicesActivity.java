@@ -603,8 +603,8 @@ public class DeviceServicesActivity extends Activity implements LocationListener
 			String latitude = params[1];
 			String type = params[2];
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpPost httppost = new HttpPost(
-					"http://79.123.176.62:8080/ObstacleAlert/AddObstacle");
+			//HttpPost httppost = new HttpPost("http://79.123.176.62:8080/ObstacleAlert/AddObstacle");
+			HttpPost httppost = new HttpPost("http://192.168.1.126:8080/ObstacleAlert/AddObstacle");
 			String result = "";
 			try {
 				// Add your data
