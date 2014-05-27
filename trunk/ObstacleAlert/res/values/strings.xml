@@ -6,7 +6,7 @@
   	<string name="latitudeLabel">Latitude :</string>
   	<string name="longitudeLabel">Longitude :</string>
   		<string name="directionLabel">Direction :</string>
-  		<string name="UzunLabel">Uzun :</string>
+  		<string name="obsLabel">Obstacle :</string>
   	<string name="otherLabel">Other :</string>
   	<string name="def_double">0.0</string>
   	<string name="other">other</string>
