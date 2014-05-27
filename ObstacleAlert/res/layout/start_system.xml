@@ -73,20 +73,20 @@
 
     </LinearLayout>
     <LinearLayout
-        android:id="@+id/UzunLayout"
+        android:id="@+id/obsLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
         <TextView
-            android:id="@+id/UzunLabel"
+            android:id="@+id/obsLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/UzunLabel"
+            android:text="@string/obsLabel"
             android:layout_weight="1"
             android:textAppearance="?android:attr/textAppearanceLarge" />
 
         <TextView
-            android:id="@+id/UzunText"
+            android:id="@+id/obsText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/def_double"
