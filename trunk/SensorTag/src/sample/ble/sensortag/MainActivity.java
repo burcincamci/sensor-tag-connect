@@ -96,7 +96,7 @@ public class MainActivity extends Activity {
 			String username = params[0];
 			String password = params[1];
 			HttpClient httpclient = new DefaultHttpClient();
-			//HttpPost httppost = new HttpPost("http://79.123.176.62:8080/ObstacleAlert/CheckUser");
+			//HttpPost httppost = new HttpPost("http://79.123.176.83:8080/ObstacleAlert/CheckUser");
 			HttpPost httppost = new HttpPost("http://192.168.1.126:8080/ObstacleAlert/CheckUser");
 			String result = "";
 			try {
@@ -128,6 +128,7 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(String result) {
 
 			if (result.toString().equalsIgnoreCase("true")) {
+			//if (true) {
 				final Intent intent = new Intent(MainActivity.this, DeviceScanActivity.class);
 				startActivity(intent);
 			} else {
