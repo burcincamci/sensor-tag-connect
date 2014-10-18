@@ -5,115 +5,35 @@
     android:orientation="vertical"
     tools:context=".StartSystem" >
 
-    <LinearLayout
-        android:id="@+id/latitudeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
+ 
         <TextView
-            android:id="@+id/latitudeLabel"
-            android:layout_width="0dp"
+            android:id="@+id/enterInputLabel"
+            android:layout_height="wrap_content"
+            android:text="@string/enterInputLabel"
+            android:textAppearance="?android:attr/textAppearanceLarge" 
+            android:layout_width="fill_parent"/>
+		<EditText
+   			android:id="@+id/enterInput"
+			android:layout_width="fill_parent" 
+    		android:layout_height="wrap_content"
+    		android:inputType="text"
+    		/>
+		<Button 
+		    android:id="@+id/submitButton"
+		    android:layout_width="wrap_content" 
+		    android:text="@string/submitButton"
+		    android:layout_height="wrap_content"
+		    />
+		<TextView
+            android:id="@+id/nameList"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/latitudeLabel"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:text="@string/nameList"
+            android:textAppearance="?android:attr/textAppearanceLarge" 
+            android:layout_width="fill_parent"/>
 
-        <TextView
-            android:id="@+id/latitudeText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/def_double"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/longitudeLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/longitudeLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/longitudeLabel"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/longitudeText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/def_double"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    </LinearLayout>
-	<LinearLayout
-        android:id="@+id/directionLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/directionLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/directionLabel"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/directionText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/def_double"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/obsLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/obsLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/obsLabel"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/obsText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/def_double"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    </LinearLayout>
-  	 <LinearLayout
-        android:id="@+id/otherLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <TextView
-            android:id="@+id/otherLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@string/otherLabel"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-        <TextView
-            android:id="@+id/otherText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/other"
-            android:layout_weight="1"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
-
-    </LinearLayout>
 </LinearLayout>
+
+
